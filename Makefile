@@ -14,8 +14,8 @@ SRC := $(foreach d,$(SRC_DIR),$(wildcard $(d)/*.cpp))
 # Main directories
 MAIN_DIR := src/
 # Main file 
-# Pick one : 
-MAIN := 
+# Pick one : main_ecs.cpp
+MAIN := main_ecs.cpp
 # Main path
 MAIN_PATH := $(MAIN_DIR)/$(MAIN)
 # Main .o
