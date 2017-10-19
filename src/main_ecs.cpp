@@ -1,10 +1,11 @@
 #include <ecs/Config.hpp>
 #include <ecs/component/Component.hpp>
+#include <ecs/component/ComponentPool.hpp>
 
 #include <iostream>
 
 int main (int , char** ) {
-    std::cout << "ECS !" << std::endl;
-    
+    using namespace ECS_NS_ECS;
+
     return 0;
 }
