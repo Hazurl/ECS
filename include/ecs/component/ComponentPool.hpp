@@ -22,7 +22,7 @@ public:
     }
 
     void reset() {
-        C* comps = reinterpret_cast<C*>(components);
+        auto comps = reinterpret_cast<C*>(components);
         for(int i = 0; i < used; ++i)
             comps[i].~C();
         std::fill(comp_entity_map, comp_entity_map + size, -1);
@@ -55,7 +55,7 @@ public:
     void remove(i32 entity) {
         assert(has(entity));
         i32 cidx = entity_comp_map[entity];
-        C* comps = reinterpret_cast<C*>(components);
+        auto comps = reinterpret_cast<C*>(components);
         comps[cidx].~C();
         
         if (used > 1) { // move last
@@ -75,7 +75,21 @@ public:
 
         --used;
     }
-    
+
+    template<typename F>
+    void for_each(F f) {
+        auto comps = reinterpret_cast<C*>(components);
+        for (int i = 0; i < used; ++i)
+            f(comps[i]);
+    }
+
+    template<typename F>
+    void for_each(F f) const {
+        auto comps = reinterpret_cast<const C*>(components);
+        for (int i = 0; i < used; ++i)
+            f(comps[i]);
+    }
+
 private:
 
     ui8 components[size * sizeof(C)];
