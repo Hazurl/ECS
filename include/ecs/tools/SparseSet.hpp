@@ -29,7 +29,7 @@ struct SparseSetData<C, size, instant_grow_policy, _> {
 };
 
 template<typename C, ui32 max_size, bool _, i32 InitialSize, i32 Factor>
-struct SparseSetData<C, max_size, block_grow_policy<InitialSize, Factor>, _> {
+struct SparseSetData<C, max_size, growing_grow_policy<InitialSize, Factor>, _> {
     SparseSetData() : data(new_RawArray<C>(InitialSize)) {}
     ~SparseSetData() { delete_RawArray<C>(data); }
     
