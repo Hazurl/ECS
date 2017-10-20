@@ -9,7 +9,7 @@
 
 ECS_BEGIN_NS
 
-template<typename C, i32 size>
+template<typename C, i32 size, typename grow_policy = instant_grow_policy>
 class ComponentPool {
 public:
 
@@ -50,8 +50,8 @@ public:
 
 private:
 
-    SparseSet<C, size> pool;
-
+    SparseSet<C, size, grow_policy> pool;
+    
 };
 
 ECS_END_NS
