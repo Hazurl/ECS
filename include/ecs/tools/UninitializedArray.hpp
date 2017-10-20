@@ -10,11 +10,16 @@ ECS_BEGIN_NS
 
 template<typename C, ui32 size, typename grow_policy, bool _ = (std::is_same<typename grow_policy::tag, tag_grow_policy>::value) >
 struct UninitializedArray {
-    static_assert(_, "Unknown grow policy");
+    static_assert(!_, "Unknown grow policy");
 };
 
-template<typename C, ui32 size, bool _>
-struct UninitializedArray<C, size, instant_grow_policy, _> {
+template<typename C, ui32 size, typename grow_policy>
+struct UninitializedArray<C, size, grow_policy, false> {
+    static_assert(std::is_same<typename grow_policy::tag, tag_grow_policy>::value, "policy must define tag 'tag_grow_policy'");
+};
+
+template<typename C, ui32 size>
+struct UninitializedArray<C, size, instant_grow_policy, true> {
     C& operator [] (i32 id) {
         return raw_cast<C>(data[id]);
     }
@@ -26,8 +31,8 @@ struct UninitializedArray<C, size, instant_grow_policy, _> {
     RawArray<C, size> data;
 };
 
-template<typename C, ui32 max_size, bool _, i32 InitialSize, i32 Factor>
-struct UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, _> {
+template<typename C, ui32 max_size, i32 InitialSize, i32 Factor>
+struct UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true> {
     UninitializedArray() : data(new_RawArray<C>(InitialSize)) {}
     ~UninitializedArray() { delete_RawArray<C>(data); }
     
@@ -59,8 +64,8 @@ struct UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>,
     ui32 size = InitialSize;
 };
 
-template<typename C, ui32 max_size, bool _, i32 N>
-struct UninitializedArray<C, max_size, bucket_grow_policy<N>, _> {
+template<typename C, ui32 max_size, i32 N>
+struct UninitializedArray<C, max_size, bucket_grow_policy<N>, true> {
     static constexpr i32 count_bucket = std::ceil(static_cast<float>(max_size) / N);
     
     UninitializedArray() {
