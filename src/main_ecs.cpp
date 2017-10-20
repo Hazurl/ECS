@@ -9,7 +9,9 @@ struct X { X(int x) : x(x) {} ~X() {} int x; };
 int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
-    ComponentPool<X, 2048, growing_grow_policy<256>> pool;
+    //ComponentPool<X, 2048, growing_grow_policy<256>> pool;
+    //ComponentPool<X, 2048, bucket_grow_policy<256>> pool;
+    ComponentPool<X, 2048, instant_grow_policy> pool;
     pool.add(10, 10);
     pool.remove(10);
     pool.add(10, 10);
