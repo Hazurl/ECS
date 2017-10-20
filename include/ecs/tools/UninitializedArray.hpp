@@ -9,17 +9,18 @@
 ECS_BEGIN_NS
 
 template<typename C, ui32 size, typename grow_policy, bool _ = (std::is_same<typename grow_policy::tag, tag_grow_policy>::value) >
-struct UninitializedArray {
+class UninitializedArray {
     static_assert(!_, "Unknown grow policy");
 };
 
 template<typename C, ui32 size, typename grow_policy>
-struct UninitializedArray<C, size, grow_policy, false> {
+class UninitializedArray<C, size, grow_policy, false> {
     static_assert(std::is_same<typename grow_policy::tag, tag_grow_policy>::value, "policy must define tag 'tag_grow_policy'");
 };
 
 template<typename C, ui32 size>
-struct UninitializedArray<C, size, instant_grow_policy, true> {
+class UninitializedArray<C, size, instant_grow_policy, true> {
+public:
     C& operator [] (i32 id) {
         return raw_cast<C>(data[id]);
     }
@@ -28,11 +29,15 @@ struct UninitializedArray<C, size, instant_grow_policy, true> {
         return raw_cast<C>(data[id]);
     }
 
+private:
+
     RawArray<C, size> data;
 };
 
 template<typename C, ui32 max_size, i32 InitialSize, i32 Factor>
-struct UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true> {
+class UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true> {
+public:
+
     UninitializedArray() : data(new_RawArray<C>(InitialSize)) {}
     ~UninitializedArray() { delete_RawArray<C>(data); }
     
@@ -60,22 +65,36 @@ struct UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>,
         }
     }
 
+private:
+
     RawArrayPtr<C> data;
     ui32 size = InitialSize;
 };
 
 template<typename C, ui32 max_size, i32 N>
-struct UninitializedArray<C, max_size, bucket_grow_policy<N>, true> {
-    static constexpr i32 count_bucket = std::ceil(static_cast<float>(max_size) / N);
-    
+class UninitializedArray<C, max_size, bucket_grow_policy<N>, true> {
+public:
+        
     UninitializedArray() {
         std::fill(data, data + count_bucket, nullptr);        
     }
+    
     ~UninitializedArray() { 
         for(int i = 0; i < count_bucket; ++i)
             if (data[i] != nullptr)
                 delete_RawArray<C>(data[i]);
     }
+
+    C& operator [] (i32 id) {
+        return raw_cast<C>(get_bucket(id)[id]);
+    }
+
+    const C& operator [] (i32 id) const {
+        return raw_cast<C>(data[get_bucket_idx(id)][id]);
+    }
+
+private:
+    static constexpr i32 count_bucket = std::ceil(static_cast<float>(max_size) / N);
 
     i32 get_bucket_idx (i32 id) const {
         return std::floor(static_cast<float>(id) / N);
@@ -87,14 +106,6 @@ struct UninitializedArray<C, max_size, bucket_grow_policy<N>, true> {
         if (b == nullptr)
             b = new_RawArray<C>(N);
         return b;
-    }
-    
-    C& operator [] (i32 id) {
-        return raw_cast<C>(get_bucket(id)[id]);
-    }
-
-    const C& operator [] (i32 id) const {
-        return raw_cast<C>(data[get_bucket_idx(id)][id]);
     }
 
     RawArrayPtr<C> data[count_bucket];
