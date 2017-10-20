@@ -69,7 +69,7 @@ struct UninitializedArray<C, max_size, bucket_grow_policy<N>, _> {
     ~UninitializedArray() { 
         for(int i = 0; i < count_bucket; ++i)
             if (data[i] != nullptr)
-                delete data[i];
+                delete_RawArray<C>(data[i]);
     }
 
     i32 get_bucket_idx (i32 id) const {
