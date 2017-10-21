@@ -36,7 +36,6 @@ public:
     RawArray(RawArray<T> const& o) = delete;
     
     RawArray(ui32 size) : raw( new Data_t[size] ) {}
-    RawArray(Data_t* r) : raw(r) {}
     ~RawArray() { delete [] raw; }
     RawArray(RawArray<T>&& o) {
         raw = o.raw;
@@ -65,6 +64,14 @@ public:
 
     const Data_t& operator [] (ui32 idx) const {
         return raw[idx];
+    }
+
+    operator Data_t* () {
+        return raw;
+    }
+
+    operator const Data_t* () const {
+        return raw;
     }
 
 private:
@@ -104,12 +111,12 @@ public:
         return raw[idx];
     }
 
-    operator RawArray<T> () {
-        return RawArray<T>(raw);
+    operator Data_t* () {
+        return raw;
     }
 
-    operator const RawArray<T> () const {
-        return RawArray<T>(raw);
+    operator const Data_t* () const {
+        return raw;
     }
 
 private:
