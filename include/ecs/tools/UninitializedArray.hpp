@@ -54,21 +54,22 @@ public:
         return *this;
     }
 
-    C& operator [] (i32 id) {
-        if (id >= static_cast<i32>(size))
+    C& operator [] (ui32 id) {
+        if (id >= size)
             resize(id);
         return data[id].cast();
     }
 
-    const C& operator [] (i32 id) const {
+    const C& operator [] (ui32 id) const {
         return data[id].cast();
     }
 
-    void resize(i32 atleast) {
-        if (size < max_size) {
-            i32 new_size = size * Factor;
-            while(new_size < static_cast<i32>(max_size) && new_size < atleast) new_size *= Factor;
+    void resize(ui32 atleast) {
+        ui32 new_size = size * Factor;
+        while(new_size < atleast && new_size < max_size) new_size *= Factor;
+        if (new_size > max_size) new_size = max_size;
 
+        if (size != new_size) {
             RawArray<C> new_data(new_size);
             new_data.copy_raw(data, size);
             data = std::move(new_data);
