@@ -37,10 +37,28 @@ private:
 template<typename C, ui32 max_size, i32 InitialSize, i32 Factor>
 class UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true> {
 public:
-
+    using this_type = UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true>;
+    
     UninitializedArray() : data(new_RawArray<C>(InitialSize)) {}
     ~UninitializedArray() { delete_RawArray<C>(data); }
-    
+
+    UninitializedArray(this_type const& o) {
+        data = new_RawArray<C>(o.size);
+        size = o.size;
+        copy_RawArray<C>(o.data, data, o.size);
+    }
+
+    UninitializedArray(this_type&& o) {
+        data = new_RawArray<C>(o.size);
+        size = o.size;
+        move_RawArray<C>(o.data, data, o.size);
+    }
+
+    this_type& operator=(this_type o) {
+        std::swap(data, o.data);
+        return *this;
+    }
+
     C& operator [] (i32 id) {
         if (id >= static_cast<i32>(size))
             resize(id);
@@ -74,15 +92,43 @@ private:
 template<typename C, ui32 max_size, i32 N>
 class UninitializedArray<C, max_size, bucket_grow_policy<N>, true> {
 public:
-        
+    using this_type = UninitializedArray<C, max_size, bucket_grow_policy<N>, true>;
+    
     UninitializedArray() {
         std::fill(data, data + count_bucket, nullptr);        
     }
-    
+
     ~UninitializedArray() { 
         for(int i = 0; i < count_bucket; ++i)
             if (data[i] != nullptr)
                 delete_RawArray<C>(data[i]);
+    }
+
+    UninitializedArray(this_type const& o) {
+        for(int i = 0; i < count_bucket; ++i) {
+            if (o.data[i] != nullptr) {
+                data[i] = new_RawArray<C>(N);
+                copy_RawArray<C>(o.data[i], data[i], N);
+            } else {
+                data[i] = nullptr;
+            }
+        }
+    }
+
+    UninitializedArray(this_type&& o) {
+        for(int i = 0; i < count_bucket; ++i) {
+            if (o.data[i] != nullptr) {
+                data[i] = new_RawArray<C>(N);
+                move_RawArray<C>(o.data[i], data[i], N);
+            } else {
+                data[i] = nullptr;
+            }
+        }
+    }
+
+    this_type& operator=(this_type o) {
+        std::swap(data, o.data);
+        return *this;
     }
 
     C& operator [] (i32 id) {
