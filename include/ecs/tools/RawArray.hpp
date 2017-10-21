@@ -5,45 +5,116 @@
 
 ECS_BEGIN_NS
 
+namespace {
+
+    template<ui32 a, ui32 b>
+    static constexpr ui32 Max = a > b ? a : b;
+
+    template<ui32 a, ui32 b>
+    static constexpr ui32 Min = a < b ? a : b;
+    
+}
+
 template<typename T>
-using RawData = alignas(alignof(T)) i8[sizeof(T)];
+struct RawData {
+    using type = alignas(alignof(T)) i8[sizeof(T)];
+    type value;
+
+    T& cast() { 
+        return reinterpret_cast<T&>(value); 
+    }
+    const T& cast() const { 
+        return reinterpret_cast<const T&>(value); 
+    }
+};
+
+template<typename T>
+class RawArray {
+public:
+    using Data_t = RawData<T>;
+
+    RawArray(RawArray<T> const& o) = delete;
+    
+    RawArray(ui32 size) : raw( new Data_t[size] ) {}
+    RawArray(Data_t* r) : raw(r) {}
+    ~RawArray() { delete [] raw; }
+    RawArray(RawArray<T>&& o) {
+        raw = o.raw;
+        o.raw = nullptr;
+    }
+    RawArray<T>& operator = (RawArray<T>&& o) {
+        delete [] raw;
+        raw = o.raw;
+        o.raw = nullptr;
+        return *this;
+    }
+
+    void copy_raw(RawArray<T> const& from, ui32 size) {
+        for (ui32 i = 0; i < size; ++i)
+            (*this)[i] = from[i];
+    }
+
+    void copy_content(RawArray<T> const& from, ui32 size) {
+        for (ui32 i = 0; i < size; ++i)
+            (*this)[i].cast() = from[i].cast();
+    }
+
+    Data_t& operator [] (ui32 idx) {
+        return raw[idx];
+    }
+
+    const Data_t& operator [] (ui32 idx) const {
+        return raw[idx];
+    }
+
+private:
+
+    Data_t* raw = nullptr;    
+};
 
 template<typename T, ui32 N>
-using RawArray = RawData<T>[N];
+class SizedRawArray {
+public:
+    using Data_t = RawData<T>;
 
-template<typename T>
-using RawArrayPtr = RawData<T>*;
+    SizedRawArray(SizedRawArray<T, N> const&) = delete;
 
-template<typename T>
-RawArrayPtr<T> new_RawArray(ui32 size) {
-    return static_cast<RawArrayPtr<T>>( new RawData<T>[size] );
-}
+    SizedRawArray() = default;
+    ~SizedRawArray() = default;
+    SizedRawArray(SizedRawArray<T, N>&&) = default;
+    SizedRawArray<T, N>& operator = (SizedRawArray<T, N>&&) = default;
+    
+    template<ui32 M = N>
+    void copy_raw(SizedRawArray<T, N> const& from, ui32 size = Min<M, N>) {
+        for (ui32 i = 0; i < size; ++i)
+            (*this)[i] = from[i];
+    }
 
-template<typename T>
-void delete_RawArray(RawArrayPtr<T>& arr) {
-    delete [] arr;
-}
+    template<ui32 M = N>
+    void copy_content(SizedRawArray<T, M> const& from, ui32 size = Min<M, N>) {
+        for (ui32 i = 0; i < size; ++i)
+            (*this)[i].cast() = from[i].cast();
+    }
 
-template<typename T>
-void copy_RawArray(RawArrayPtr<T> const& from, RawArrayPtr<T>& to, ui32 size) {
-    for (ui32 i = 0; i < size; ++i)
-        (*to)[i] = (*from)[i];
-}
+    Data_t& operator [] (ui32 idx) {
+        return raw[idx];
+    }
 
-template<typename T>
-void move_RawArray(RawArrayPtr<T>& from, RawArrayPtr<T>& to, ui32 size) {
-    for (ui32 i = 0; i < size; ++i)
-        (*to)[i] = std::move((*from)[i]);
-}
+    const Data_t& operator [] (ui32 idx) const {
+        return raw[idx];
+    }
 
-template<typename T>
-T& raw_cast(RawData<T>& r) {
-    return reinterpret_cast<T&>(r);
-}
+    operator RawArray<T> () {
+        return RawArray<T>(raw);
+    }
 
-template<typename T>
-const T& raw_cast(RawData<T> const& r) {
-    return reinterpret_cast<const T&>(r);
-}
+    operator const RawArray<T> () const {
+        return RawArray<T>(raw);
+    }
+
+private:
+
+    Data_t raw[N];    
+};
 
 ECS_END_NS

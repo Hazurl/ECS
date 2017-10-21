@@ -4,6 +4,8 @@
 #include <ecs/policy/grow_policy.hpp>
 #include <ecs/tools/RawArray.hpp>
 
+#include <mtp/Utils.h>
+
 #include <cmath>
 
 ECS_BEGIN_NS
@@ -15,23 +17,23 @@ class UninitializedArray {
 
 template<typename C, ui32 size, typename grow_policy>
 class UninitializedArray<C, size, grow_policy, false> {
-    static_assert(std::is_same<typename grow_policy::tag, tag_grow_policy>::value, "policy must define tag 'tag_grow_policy'");
+    static_assert(mtp::AlwaysFalse<C>::value, "policy must define tag 'tag_grow_policy'");
 };
 
 template<typename C, ui32 size>
 class UninitializedArray<C, size, instant_grow_policy, true> {
 public:
     C& operator [] (i32 id) {
-        return raw_cast<C>(data[id]);
+        return data[id].cast();
     }
 
     const C& operator [] (i32 id) const {
-        return raw_cast<C>(data[id]);
+        return data[id].cast();
     }
 
 private:
 
-    RawArray<C, size> data;
+    SizedRawArray<C, size> data;
 };
 
 template<typename C, ui32 max_size, i32 InitialSize, i32 Factor>
@@ -39,34 +41,27 @@ class UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, 
 public:
     using this_type = UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true>;
     
-    UninitializedArray() : data(new_RawArray<C>(InitialSize)) {}
-    ~UninitializedArray() { delete_RawArray<C>(data); }
+    UninitializedArray() : data(InitialSize), size(InitialSize) {}
+    ~UninitializedArray() {}
 
-    UninitializedArray(this_type const& o) {
-        data = new_RawArray<C>(o.size);
+    UninitializedArray(this_type const& o) = delete;
+
+    UninitializedArray(this_type&& o) : data(std::move(o.data)), size(o.size) {}
+
+    this_type& operator=(this_type&& o) {
+        data = std::move(o.data);
         size = o.size;
-        copy_RawArray<C>(o.data, data, o.size);
-    }
-
-    UninitializedArray(this_type&& o) {
-        data = new_RawArray<C>(o.size);
-        size = o.size;
-        move_RawArray<C>(o.data, data, o.size);
-    }
-
-    this_type& operator=(this_type o) {
-        std::swap(data, o.data);
         return *this;
     }
 
     C& operator [] (i32 id) {
         if (id >= static_cast<i32>(size))
             resize(id);
-        return raw_cast<C>(data[id]);
+        return data[id].cast();
     }
 
     const C& operator [] (i32 id) const {
-        return raw_cast<C>(data[id]);
+        return data[id].cast();
     }
 
     void resize(i32 atleast) {
@@ -74,18 +69,16 @@ public:
             i32 new_size = size * Factor;
             while(new_size < static_cast<i32>(max_size) && new_size < atleast) new_size *= Factor;
 
-            RawArrayPtr<C> new_data = new_RawArray<C>(new_size);
-            move_RawArray<C>(data, new_data, size);
-            delete_RawArray<C>(data);
-
-            data = new_data;
+            RawArray<C> new_data(new_size);
+            new_data.copy_raw(data, size);
+            data = std::move(new_data);
             size = new_size;
         }
     }
 
 private:
 
-    RawArrayPtr<C> data;
+    RawArray<C> data;
     ui32 size = InitialSize;
 };
 
@@ -101,60 +94,49 @@ public:
     ~UninitializedArray() { 
         for(int i = 0; i < count_bucket; ++i)
             if (data[i] != nullptr)
-                delete_RawArray<C>(data[i]);
+                delete data[i];
     }
 
-    UninitializedArray(this_type const& o) {
-        for(int i = 0; i < count_bucket; ++i) {
-            if (o.data[i] != nullptr) {
-                data[i] = new_RawArray<C>(N);
-                copy_RawArray<C>(o.data[i], data[i], N);
-            } else {
-                data[i] = nullptr;
-            }
-        }
-    }
+    UninitializedArray(this_type const& o) = delete;
 
     UninitializedArray(this_type&& o) {
-        for(int i = 0; i < count_bucket; ++i) {
-            if (o.data[i] != nullptr) {
-                data[i] = new_RawArray<C>(N);
-                move_RawArray<C>(o.data[i], data[i], N);
-            } else {
-                data[i] = nullptr;
-            }
-        }
+        for(int i = 0; i < count_bucket; ++i)
+            data[i] = (o.data[i] == nullptr) ? 
+                nullptr : 
+                new SizedRawArray<C, N>(std::move(o.data[i]));
     }
 
-    this_type& operator=(this_type o) {
-        std::swap(data, o.data);
+    this_type& operator=(this_type&& o) {
+        for(int i = 0; i < count_bucket; ++i)
+            data[i] = (o.data[i] == nullptr) ? 
+                nullptr : 
+                new SizedRawArray<C, N>(std::move(o.data[i]));
         return *this;
     }
 
     C& operator [] (i32 id) {
-        return raw_cast<C>(get_bucket(id)[id]);
+        return get_bucket(id)[id].cast();
     }
 
     const C& operator [] (i32 id) const {
-        return raw_cast<C>(data[get_bucket_idx(id)][id]);
+        return data[get_bucket_idx(id)][id].cast();
     }
 
 private:
-    static constexpr i32 count_bucket = std::ceil(static_cast<float>(max_size) / N);
-
     i32 get_bucket_idx (i32 id) const {
-        return std::floor(static_cast<float>(id) / N);
+        return id / N;
     }
 
-    RawArrayPtr<C> get_bucket(i32 id) {
+    SizedRawArray<C, N>& get_bucket(i32 id) {
         i32 bucket_idx = get_bucket_idx(id);
-        RawArrayPtr<C>& b = data[bucket_idx];
+        auto& b = data[bucket_idx];
         if (b == nullptr)
-            b = new_RawArray<C>(N);
-        return b;
+            b = new SizedRawArray<C, N>();
+        return *b;
     }
 
-    RawArrayPtr<C> data[count_bucket];
+    static constexpr i32 count_bucket = (max_size + 1) / N;
+    SizedRawArray<C, N>* data[count_bucket];
 };
 
 ECS_END_NS
