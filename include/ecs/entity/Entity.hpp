@@ -3,6 +3,8 @@
 #include <ecs/Config.hpp>
 #include <ecs/policy/mask_policy.hpp>
 
+#include <iostream>
+
 ECS_BEGIN_NS
 
 template<typename mask_policy>
@@ -18,6 +20,10 @@ struct Entity {
         ) };
     }
 
+    static Entity<mask_policy> next_version(Entity<mask_policy> e) {
+        return create(e.id(), e.version() + 1);
+    }
+
     Entity(T ent) : entity(ent) {}
 
     inline T_id id() const {
@@ -28,7 +34,20 @@ struct Entity {
         return static_cast<T_version>((entity >> mask_policy::version_shift) & mask_policy::version_mask);
     }
 
-    const T entity;    
+    bool operator == (Entity<mask_policy> const& o) const {
+        return entity == o.entity;
+    }
+
+    bool operator < (Entity<mask_policy> const& o) const {
+        return entity < o.entity;
+    }
+
+    T entity;    
 };
+
+template<typename mask_policy>
+std::ostream& operator << (std::ostream& os, Entity<mask_policy> const& ent) {
+    return os << "<" << static_cast<ui64>(ent.id()) << ":" << static_cast<ui64>(ent.version()) << ">";
+}
 
 ECS_END_NS

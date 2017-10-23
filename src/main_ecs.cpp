@@ -1,5 +1,6 @@
 #include <ecs/Config.hpp>
 #include <ecs/entity/Entity.hpp>
+#include <ecs/entity/EntityManager.hpp>
 
 #include <iostream>
 
@@ -29,20 +30,19 @@ namespace std {
 int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
-    using E = Entity<entity_4_12_mask>;
+    EntityManager<entity_4_12_mask> em;
 
-    E e0 = E::create(0u, 0u);
-    std::cout << "E0 <" << (i64)e0.id() << ":" << (i64)e0.version() << ">" << std::endl; 
-    E e1 = E::create(0u, 1u);
-    std::cout << "E1 <" << (i64)e1.id() << ":" << (i64)e1.version() << ">" << std::endl; 
-    E e2 = E::create(1u, 0u);
-    std::cout << "E2 <" << (i64)e2.id() << ":" << (i64)e2.version() << ">" << std::endl; 
-    E e3 = E::create(128u, 0u);
-    std::cout << "E3 <" << (i64)e3.id() << ":" << (i64)e3.version() << ">" << std::endl; 
-    E e4 = E::create(56u, 3u);
-    std::cout << "E4 <" << (i64)e4.id() << ":" << (i64)e4.version() << ">" << std::endl; 
-    E e5 = E::create(1000u, 1000u);
-    std::cout << "E5 <" << (i64)e5.id() << ":" << (i64)e5.version() << ">" << std::endl; 
+    auto e0 = em.create();
+    auto e1 = em.create();
+
+    std::cout << e0 << std::endl << e1 << std::endl;
+    std::cout << em.alive(e0) << std::endl;
+    em.destroy(e0);
+    std::cout << em.alive(e0) << std::endl;
+    auto e2 = em.create();
+    std::cout << e2 << std::endl;
+    em.destroy(e0);
+    em.destroy(e0);    
     
     return 0;
 }
