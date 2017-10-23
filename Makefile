@@ -2,7 +2,7 @@
 #                     SRC                    #
 ##############################################
 # All directories to build (inside src/)
-DIR := 
+DIR := tests
 # Directories with src/ prefix
 SRC_DIR := $(addprefix src/,$(DIR))
 # All .cpp files
@@ -14,8 +14,8 @@ SRC := $(foreach d,$(SRC_DIR),$(wildcard $(d)/*.cpp))
 # Main directories
 MAIN_DIR := src/
 # Main file 
-# Pick one : main_ecs.cpp
-MAIN := main_ecs.cpp
+# Pick one : main_ecs.cpp main_test.cpp
+MAIN := main_test.cpp
 # Main path
 MAIN_PATH := $(MAIN_DIR)/$(MAIN)
 # Main .o
