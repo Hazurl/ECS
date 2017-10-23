@@ -9,7 +9,7 @@
 
 ECS_BEGIN_NS
 
-template<typename C, i32 size, typename grow_policy = instant_grow_policy>
+template<typename C, i32 size, typename E, typename grow_policy = instant_grow_policy>
 class ComponentPool {
 public:
 
@@ -17,24 +17,24 @@ public:
         return pool.reset();
     }
 
-    bool has(i32 entity) {
+    bool has(E entity) {
         return pool.has(entity);
     }
 
-    C& get(i32 entity) {
+    C& get(E entity) {
         return pool.get(entity);
     }
 
-    const C& get(i32 entity) const {
+    const C& get(E entity) const {
         return pool.get(entity);
     }
 
     template<typename...Args>
-    void add(i32 entity, Args&&... args) {
+    void add(E entity, Args&&... args) {
         pool.add(entity, std::forward<Args>(args)...);
     }
 
-    void remove(i32 entity) {
+    void remove(E entity) {
         pool.remove(entity);
     }
 
@@ -50,7 +50,7 @@ public:
 
 private:
 
-    SparseSet<C, size, grow_policy> pool;
+    SparseSet<C, size, E, grow_policy> pool;
     
 };
 

@@ -7,12 +7,11 @@
 
 ECS_BEGIN_NS
 
-template<typename C, ui32 size, typename grow_policy = instant_grow_policy>
+template<typename C, ui32 size, typename Idx, typename grow_policy = instant_grow_policy>
 class SparseSet {
 public:
 
     SparseSet() {
-        std::fill(data_id_map, data_id_map + size, -1);
         std::fill(id_data_map, id_data_map + size, -1);
     }
 
@@ -23,53 +22,54 @@ public:
     void reset() {
         for(int i = 0; i < used; ++i)
             data[i].~C();
-        std::fill(data_id_map, data_id_map + size, -1);
         std::fill(id_data_map, id_data_map + size, -1);
     }
 
-    bool has(i32 id) {
-        assert(id >= 0);
+    bool has(Idx id) {
+        std::cout << "#has " << id << " : " << (id_data_map[id] != -1) << std::endl;
         return id_data_map[id] != -1;
     }
 
-    C& get(i32 id) {
+    C& get(Idx id) {
+        std::cout << "#get " << id << std::endl;
         assert(has(id));
         return data[id_data_map[id]];
     }
 
-    const C& get(i32 id) const {
+    const C& get(Idx id) const {
+        std::cout << "#get " << id << std::endl;
         assert(has(id));
         return data[id_data_map[id]];
     }
 
     template<typename...Args>
-    void add(i32 id, Args&&... args) {
+    void add(Idx id, Args&&... args) {
+        std::cout << "#Add " << id << std::endl;
         assert(!has(id));
+        std::cout << " ##  set to " << used << " : " << id << std::endl;
         id_data_map[id] = used;
         data_id_map[used] = id;
         new (&data[used++]) C(std::forward<Args>(args)...);
     }
 
-    void remove(i32 id) {
-        assert(has(id));
-        i32 cidx = id_data_map[id];
-        data[cidx].~C();
-        
-        if (used > 1) { // move last
-            i32 last = data_id_map[used - 1];
-            if (last != id) {
-                data[cidx] = std::move(data[used - 1]);
-                data[used - 1].~C();
+    void remove(Idx cur_id) {
+        assert(has(cur_id));
+        i32 cur_pos = id_data_map[cur_id];
+        data[cur_pos].~C();
 
-                id_data_map[id] = cidx;
-                data_id_map[cidx] = last;
-                id_data_map[last] = -1;
-                data_id_map[used - 1] = -1;
-            }
+        i32 last_pos = used - 1;
+        Idx last_id = data_id_map[last_pos];
+
+        if (last_pos == cur_pos) {
+            // cur is the last
+            id_data_map[cur_id] = -1;
         } else {
-            id_data_map[id] = data_id_map[cidx] = -1;            
+            data[cur_pos] = std::move(data[last_pos]);
+            data[last_pos].~C();
+            data_id_map[cur_pos] = last_id;
+            id_data_map[cur_id] = -1;
+            id_data_map[last_id] = cur_pos;
         }
-
         --used;
     }
 
@@ -88,7 +88,7 @@ public:
 private:
 
     UninitializedArray<C, size, grow_policy> data;
-    i32 data_id_map[size];
+    Idx data_id_map[size];
     i32 id_data_map[size];
     i32 used = 0;
 
