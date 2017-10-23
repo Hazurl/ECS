@@ -1,0 +1,3 @@
+[submodule "lib/meta-programming"]
+	path = lib/meta-programming
+	url = https://github.com/Hazurl/meta-programming.git

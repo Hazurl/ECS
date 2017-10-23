@@ -56,7 +56,7 @@ FLAGS := -std=c++17 -g3 -Wall -Wextra -Wno-pmf-conversions -fno-strict-aliasing
 # C++ librairie
 LIBS := 
 # Header include folder
-INCLUDE := -I ./include
+INCLUDE := -I ./include -I ./lib/meta-programming/include
 # Makefile flags
 MAKEFLAGS += --no-print-directory
 
