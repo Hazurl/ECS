@@ -16,8 +16,8 @@ namespace {
 }
 
 template<typename T>
-struct RawData {
-    using type = alignas(alignof(T)) i8[sizeof(T)];
+struct alignas(T) RawData {
+    using type = alignas(T) i8[sizeof(T)];
     type value;
 
     T& cast() { 
