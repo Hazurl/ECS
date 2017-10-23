@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ecs/Config.hpp>
-#include <ecs/tools/UninitializedArray.hpp>
+#include <ecs/container/UninitializedArray.hpp>
 
 #include <cassert>
 

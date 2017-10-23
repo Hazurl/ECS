@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ecs/Config.hpp>
-#include <ecs/tools/SparseSet.hpp>
+#include <ecs/container/SparseSet.hpp>
 
 #include <cassert>
 #include <utility>

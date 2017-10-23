@@ -2,7 +2,7 @@
 
 #include <ecs/Config.hpp>
 #include <ecs/policy/grow_policy.hpp>
-#include <ecs/tools/RawArray.hpp>
+#include <ecs/container/RawArray.hpp>
 
 #include <mtp/Utils.h>
 
