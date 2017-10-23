@@ -20,6 +20,12 @@ struct alignas(T) RawData {
     using type = alignas(T) i8[sizeof(T)];
     type value;
 
+    RawData() = default;
+    template<typename...Args>
+    RawData(Args&&...args) {
+        this->cast() = T(std::forward<Args>(args)...);
+    }
+    
     T& cast() { 
         return reinterpret_cast<T&>(value); 
     }
