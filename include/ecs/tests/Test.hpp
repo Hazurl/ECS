@@ -18,15 +18,19 @@ public:
     int run () {
         error = false;
 
+        test_RawData();
         test_RawArray();
+        test_UnitializedArray();
 
         return error ? 1 : 0;
     }
 
 private:
 
+    void test_RawData();
     void test_RawArray();
-
+    void test_UnitializedArray();
+    
     void section(std::string const& name) {
         std::cout << ">> " << MTP_CB_BLU << "Section " << name << MTP_C_RST << std::endl;
     }
