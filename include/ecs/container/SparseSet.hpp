@@ -26,27 +26,22 @@ public:
     }
 
     bool has(Idx id) {
-        std::cout << "#has " << id << " : " << (id_data_map[id] != -1) << std::endl;
         return id_data_map[id] != -1;
     }
 
     C& get(Idx id) {
-        std::cout << "#get " << id << std::endl;
         assert(has(id));
         return data[id_data_map[id]];
     }
 
     const C& get(Idx id) const {
-        std::cout << "#get " << id << std::endl;
         assert(has(id));
         return data[id_data_map[id]];
     }
 
     template<typename...Args>
     void add(Idx id, Args&&... args) {
-        std::cout << "#Add " << id << std::endl;
         assert(!has(id));
-        std::cout << " ##  set to " << used << " : " << id << std::endl;
         id_data_map[id] = used;
         data_id_map[used] = id;
         new (&data[used++]) C(std::forward<Args>(args)...);

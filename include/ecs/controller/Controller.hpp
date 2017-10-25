@@ -84,6 +84,11 @@ public:
         return get_pool<C>().add(ent.id(), std::forward<Args>(args)...);
     }
 
+    template<typename C, typename...Args>
+    void ensure(Entity_t ent, Args&&... args) {
+        return has_component<C>(ent) ? get<C>(ent) : get_pool<C>().add(ent.id(), std::forward<Args>(args)...);
+    }
+
     template<typename C>
     void remove(Entity_t ent) {
         return get_pool<C>().remove(ent.id());

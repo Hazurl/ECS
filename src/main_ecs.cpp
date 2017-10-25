@@ -49,7 +49,7 @@ int main (int , char** ) {
     c.get<X>(e).x = 100;
     std::cout << c.get<X>(e).x << std::endl;
     c.reset_components(e);
-    //std::cout << c.get<X>(e).x << std::endl;
+    std::cout << c.get<X>(e).x << std::endl;
     std::cout << c.get<X>(e1).x << std::endl;
     
     return 0;
