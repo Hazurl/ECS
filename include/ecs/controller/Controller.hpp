@@ -115,17 +115,6 @@ private:
     const Pool<C>& get_pool() const {
         return std::get<Pool<C>>(componentPools);
     }
-
-    template<i32 P>
-    Pool<mtp::at<CompList, P>>& get_pool() {
-        return std::get<P>(componentPools);
-    }
-
-    template<i32 P>
-    const Pool<mtp::at<CompList, P>>& get_pool() const {
-        return std::get<P>(componentPools);
-    }
-
     template<typename C>
     Pool<C>& get_system() {
         return std::get<Pool<C>>(systems);
@@ -134,16 +123,6 @@ private:
     template<typename C>
     const Pool<C>& get_system() const {
         return std::get<Pool<C>>(systems);
-    }
-
-    template<i32 P>
-    Pool<mtp::at<SystemsList, P>>& get_system() {
-        return std::get<P>(systems);
-    }
-
-    template<i32 P>
-    const Pool<mtp::at<SystemsList, P>>& get_system() const {
-        return std::get<P>(systems);
     }
 
     SystemsList systems;
