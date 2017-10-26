@@ -1,6 +1,6 @@
 #pragma once
 
-#include<mtp/Utils.h>
+#include <mtp/Utils.hpp>
 
 #define ECS_NS_ECS ecs
 #define ECS_BEGIN_NS namespace ecs {

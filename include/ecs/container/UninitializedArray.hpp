@@ -4,7 +4,7 @@
 #include <ecs/policy/grow_policy.hpp>
 #include <ecs/container/RawArray.hpp>
 
-#include <mtp/Utils.h>
+#include <mtp/Utils.hpp>
 
 #include <cmath>
 

@@ -4,8 +4,8 @@
 #include <ecs/component/ComponentPool.hpp>
 #include <ecs/entity/EntityManager.hpp>
 
-#include <mtp/Utils.h>
-#include <mtp/list/List.h>
+#include <mtp/Utils.hpp>
+#include <mtp/list/List.hpp>
 
 #include <tuple>
 
@@ -28,9 +28,12 @@ class Controller<Components_list<Components...>, Systems_list<Systems...>, Conte
     using SysList = Systems_list<Systems...>;
 
     using EntityManager_t = EntityManager<typename Context::entity_mask>;
-    template<typename C> using Pool = ComponentPool<C, Context::pool_size, typename EntityManager_t::Entity_t::T_id, typename Context::pool_grow_policy>;
-    using PoolList = std::tuple<Pool<Components>...>;
-    using SystemsList = std::tuple<Systems...>;
+    template<typename C> 
+    using Pool = ComponentPool<C, Context::pool_size, typename EntityManager_t::Entity_t::T_id, typename Context::pool_grow_policy>;
+    using PoolList = mtp::as_tuple<mtp::transform<CompList, Pool>>;
+    using SystemsList = mtp::as_tuple<SysList>;
+
+    using Time_t = typename Context::Time_t;
     
 public:
 
@@ -94,6 +97,13 @@ public:
         return get_pool<C>().remove(ent.id());
     }
 
+    void update(Time_t const& t) {
+        mtp::apply_lambda<SystemsList>{}([&] (auto x) {
+            using T = typename decltype(x)::type;
+            this->get_system<T>().update(t);
+        });
+    }
+
 private:
 
     template<typename C>
@@ -114,6 +124,26 @@ private:
     template<i32 P>
     const Pool<mtp::at<CompList, P>>& get_pool() const {
         return std::get<P>(componentPools);
+    }
+
+    template<typename C>
+    Pool<C>& get_system() {
+        return std::get<Pool<C>>(systems);
+    }
+
+    template<typename C>
+    const Pool<C>& get_system() const {
+        return std::get<Pool<C>>(systems);
+    }
+
+    template<i32 P>
+    Pool<mtp::at<SystemsList, P>>& get_system() {
+        return std::get<P>(systems);
+    }
+
+    template<i32 P>
+    const Pool<mtp::at<SystemsList, P>>& get_system() const {
+        return std::get<P>(systems);
     }
 
     SystemsList systems;

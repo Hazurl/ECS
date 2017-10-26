@@ -28,6 +28,7 @@ struct Context {
     using entity_mask = ecs::entity_mask<24, 8>;
     using pool_grow_policy = ecs::instant_grow_policy;
     static constexpr ecs::i32 pool_size = 1024;
+    using Time_t = float;
 };
 
 int main (int , char** ) {
@@ -49,7 +50,7 @@ int main (int , char** ) {
     c.get<X>(e).x = 100;
     std::cout << c.get<X>(e).x << std::endl;
     c.reset_components(e);
-    std::cout << c.get<X>(e).x << std::endl;
+    //std::cout << c.get<X>(e).x << std::endl;
     std::cout << c.get<X>(e1).x << std::endl;
     
     return 0;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ecs/Config.hpp>
-#include <mtp/Macro.h>
+#include <mtp/Macro.hpp>
 
 #include <string>
 
