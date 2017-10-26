@@ -7,12 +7,18 @@
 
 ECS_BEGIN_NS
 
-template<typename C, ui32 size, typename Idx, typename grow_policy = instant_grow_policy>
+template<typename C, ui32 Size, typename Idx, typename grow_policy = instant_grow_policy>
 class SparseSet {
 public:
 
+    using container_t = UninitializedArray<C, Size, grow_policy>;
+    using forward_iterator = Iterator<container_t, C, true>;
+    using backward_iterator = Iterator<container_t, C, false>;
+    using forward_const_iterator = ConstIterator<container_t, C, true>;
+    using backward_const_iterator = ConstIterator<container_t, C, false>;
+    
     SparseSet() {
-        std::fill(id_data_map, id_data_map + size, -1);
+        std::fill(id_data_map, id_data_map + Size, -1);
     }
 
     ~SparseSet() {
@@ -22,7 +28,7 @@ public:
     void reset() {
         for(int i = 0; i < used; ++i)
             data[i].~C();
-        std::fill(id_data_map, id_data_map + size, -1);
+        std::fill(id_data_map, id_data_map + Size, -1);
     }
 
     bool has(Idx id) {
@@ -68,23 +74,23 @@ public:
         --used;
     }
 
-    template<typename F>
-    void for_each(F f) {
-        for (int i = 0; i < used; ++i)
-            f(data[i]);
-    }
+    forward_iterator begin()  { return forward_iterator(data, 0); }
+    forward_iterator end()    { return forward_iterator(data, used); }
+    backward_iterator rbegin(){ return backward_iterator(data, 0); }
+    backward_iterator rend()  { return backward_iterator(data, used); }
 
-    template<typename F>
-    void for_each(F f) const {
-        for (int i = 0; i < used; ++i)
-            f(data[i]);
-    }
+    forward_const_iterator cbegin() const   { return forward_const_iterator(data, 0); }
+    forward_const_iterator cend() const     { return forward_const_iterator(data, used); }
+    backward_const_iterator crbegin() const { return backward_const_iterator(data, 0); }
+    backward_const_iterator crend() const   { return backward_const_iterator(data, used); }
+
+    ui32 size () const { return used; }
 
 private:
 
-    UninitializedArray<C, size, grow_policy> data;
-    Idx data_id_map[size];
-    i32 id_data_map[size];
+    container_t data;
+    Idx data_id_map[Size];
+    i32 id_data_map[Size];
     i32 used = 0;
 
 };
