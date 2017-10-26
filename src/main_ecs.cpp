@@ -36,22 +36,15 @@ int main (int , char** ) {
 
     using C = Controller<Components_list<X>, Systems_list<>, Context>;
 
-    C c;
+    C::Entity_t ent = 42;
+    X x(1337);
+    double i = -1.1;
 
-    auto e = c.create();
-    std::cout << e << std::endl;
-    std::cout << c.has_component<X>(e) << std::endl;
-    c.add<X>(e, 42);
-    std::cout << c.has_component<X>(e) << std::endl;
-    std::cout << c.get<X>(e).x << std::endl;
-    auto e1 = c.create();
-    c.add<X>(e1);
-    std::cout << c.get<X>(e1).x << std::endl;
-    c.get<X>(e).x = 100;
-    std::cout << c.get<X>(e).x << std::endl;
-    c.reset_components(e);
-    //std::cout << c.get<X>(e).x << std::endl;
-    std::cout << c.get<X>(e1).x << std::endl;
+    C::View<X, double> v(ent, std::make_tuple(&x, &i));
+
+    std::cout << v.get<X>().x << std::endl;
+    std::cout << v.get<double>() << std::endl;
+    std::cout << v.get<int>() << std::endl;
     
     return 0;
 }

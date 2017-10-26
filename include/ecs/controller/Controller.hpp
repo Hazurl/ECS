@@ -104,7 +104,41 @@ public:
         });
     }
 
-private:
+//private:
+
+    template<typename...ViewComponents>
+    class View {
+        using ViewComponentsList = mtp::List<ViewComponents...>;
+
+    public:
+
+        View(Entity_t ent, std::tuple<ViewComponents*...> const& components) : ent(ent), components(components) {}
+        ~View() = default;
+
+        Entity_t entity() const { return ent; }
+
+        template<typename C, typename = std::enable_if_t<mtp::index_of_v<ViewComponentsList, C> != -1>>
+        C& get() {
+            return *std::get<C*>(components);
+        }
+
+        template<typename C, typename = std::enable_if_t<mtp::index_of_v<ViewComponentsList, C> != -1>>
+        const C& get() const {
+            return *std::get<C*>(components);
+        }
+
+        template<typename C, typename = std::enable_if_t<mtp::index_of_v<ViewComponentsList, C> == -1>>
+        C& get() const {
+            static_assert(mtp::index_of_v<ViewComponentsList, C> != -1, "Component requested is not in the view");
+            return reinterpret_cast<C&>(const_cast<View<ViewComponents...>&>(*this)); // don't blame me, it's just to stop cascading errors
+        }
+
+    private:
+
+        Entity_t ent;
+        std::tuple<ViewComponents*...> components;
+
+    };
 
     template<typename C>
     Pool<C>& get_pool() {
