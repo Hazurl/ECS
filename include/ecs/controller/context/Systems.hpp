@@ -32,9 +32,6 @@ struct System {
     }*/
 };
 
-template<typename S>
-using has_methods = mtp::boolConst<((mtp::size_v<typename S::methods>) > 0)>;
-
 template<typename...Args>
 using SystemMethods_list = mtp::List<Args...>;
 

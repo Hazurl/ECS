@@ -70,10 +70,7 @@ int main (int , char** ) {
     using C = Controller<Components_list<X>, Systems_list<Mover>, MyContext>;
 
     using SystMover = System<Mover, SystemMethods_list< SYST_METH(Mover::update) >>;
-    using context = Context<Components_list<>, Systems_list< Mover, System< X, SystemMethods_list<>> >, float, void, void>;
-
-    using _ = mtp::ShowType<context::systems>;
-    using __ = mtp::ShowType<context::systems_types>;
+    using context = Context<Components_list<>, Systems_list< Mover >, float, void, void>;
 
     return 0;
 }

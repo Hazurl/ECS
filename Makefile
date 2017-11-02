@@ -52,7 +52,7 @@ DEPS_FLAGS := -MMD -MP
 # C++ optimsation level
 OPTIM := -O2
 # C++ flags
-FLAGS := -std=c++17 -g3 -Wall -Wextra -Wno-pmf-conversions -fno-strict-aliasing
+FLAGS := -std=c++1z -g3 -Wall -Wextra -Wno-pmf-conversions -fno-strict-aliasing
 # C++ librairie
 LIBS := 
 # Header include folder
