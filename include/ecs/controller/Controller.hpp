@@ -3,6 +3,8 @@
 #include <ecs/Config.hpp>
 #include <ecs/component/ComponentPool.hpp>
 #include <ecs/entity/EntityManager.hpp>
+#include <ecs/container/Tuple.hpp>
+#include <ecs/controller/context/Context.hpp>
 
 #include <mtp/Utils.hpp>
 #include <mtp/list/List.hpp>
@@ -11,32 +13,31 @@
 
 ECS_BEGIN_NS
 
-template<typename Components, typename Systems, typename Context>
+template<typename Context>
 class Controller {
-    static_assert(mtp::AlwaysFalse<Components, Systems>::value, "Use Components_list, Systems_list and Context ");
-};
-
-template<typename...Args>
-using Components_list = mtp::List<Args...>;
-
-template<typename...Args>
-using Systems_list = mtp::List<Args...>;
-
-template<typename...Components, typename...Systems, typename Context>
-class Controller<Components_list<Components...>, Systems_list<Systems...>, Context> {
-    using CompList = Components_list<Components...>;
-    using SysList = Systems_list<Systems...>;
-
-    using EntityManager_t = EntityManager<typename Context::entity_mask>;
+    using EntityManager_t = EntityManager<typename Context::entities_mask>;
     template<typename C> 
-    using Pool = ComponentPool<C, Context::pool_size, typename EntityManager_t::Entity_t::T_id, typename Context::pool_grow_policy>;
-    using PoolList = mtp::as_tuple<mtp::transform<CompList, Pool>>;
-    using SystemsList = mtp::as_tuple<SysList>;
+    using Pool = ComponentPool<C, Context::pools_size, typename EntityManager_t::Entity_t::T_id, typename Context::pools_grow_policy>;
+    using PoolList = mtp::as_tuple<mtp::transform<typename Context::components_type, Pool>>;
+    using SystemsList = Tuple<typename Context::systems_type>;
 
     using Time_t = typename Context::Time_t;
     
 public:
 
+    template<typename SC>
+    Controller(SC sc) {
+        mtp::apply_lambda<typename Context::systems_type>{}([&] (auto s) {
+            using S = typename decltype(s)::type;
+            //if constexpr (SC::has_constructor_for<S>)
+            //    systems.construct<S>(sc.construct<S>());
+            //else
+                //systems.construct<S>();
+        });
+    }
+/*
+    Controller() : Controller(SystemsConstructor<Systems_list<>>{}) {}
+*/
     using Entity_t = typename EntityManager_t::Entity_t;
 
     inline Entity_t create () { 
@@ -61,7 +62,7 @@ public:
 
     template<typename...Comps>
     inline void reset_components(Entity_t ent) {
-        mtp::apply_lambda<CompList>{}([&] (auto x) {
+        mtp::apply_lambda<typename Context::components_type>{}([&] (auto x) {
             using T = typename decltype(x)::type;
             this->get_pool<T>().remove(ent.id());
         });
@@ -97,15 +98,15 @@ public:
         return get_pool<C>().remove(ent.id());
     }
 
-    void update(Time_t const& t) {
-        mtp::apply_lambda<SystemsList>{}([&] (auto x) {
+    void update(Time_t t) {
+        mtp::apply_lambda<typename Context::systems_type>{}([&] (auto x) {
             using T = typename decltype(x)::type;
             this->get_system<T>().update(t);
         });
     }
 
-//private:
-
+private:
+/*
     template<typename...ViewComponents>
     class View {
         using ViewComponentsList = mtp::List<ViewComponents...>;
@@ -139,7 +140,7 @@ public:
         std::tuple<ViewComponents*...> components;
 
     };
-
+*/
     template<typename C>
     Pool<C>& get_pool() {
         return std::get<Pool<C>>(componentPools);

@@ -42,11 +42,14 @@ struct Context <Components_list<Crgs...>, Systems_list<Srgs...>, Time, Pools, En
     static_assert(is_entity_mask_policy<entities_mask>::value, "Entities::mask is unknown");
 
     // COMPONENTS
-        // List of components type
+        // List of components ( type + meta )
     using components = Components_list<Crgs...>;
-
+        // List of components type
+    using components_type = components;
+    static_assert(mtp::unique_v<components_type>, "Components must be unique");
+    
     // SYSTEMS
-        // List of System ( type + methods )
+        // List of System ( type + meta )
     using systems = mtp::transform< Systems_list<Srgs...>, TransformSystem>;
         // List of systems type
     using systems_type = mtp::transform<systems, mtp::type_of>;
@@ -65,6 +68,9 @@ class SystemsConstructor<Systems_list<Srgs...>> : std::tuple<std::function<Srgs(
     
 public:
 
+    template<typename S>
+    static constexpr bool has_constructor_for = mtp::count_v<Systems_list<Srgs...>, S> > 0;
+
     SystemsConstructor(std::function<Srgs()>...funcs) {
         assign<Srgs...>(funcs...);
     }
@@ -81,6 +87,7 @@ private:
         assign<S>(func);
         assign<Ss...>(funcs...);
     }
+
     template<typename S>
     void assign(F<S> func) {
         std::get<F<S>>(*this) = func;

@@ -18,8 +18,8 @@ struct entity_mask {
     static constexpr i64 id_shift       = 0;
     static constexpr i64 version_shift  = id_bits_size;
 
-    static constexpr i64 id_mask        = ~((~0LL) << id_bits_size     );
-    static constexpr i64 version_mask   = ~((~0LL) << version_bits_size);
+    static constexpr i64 id_mask        = ~((~0ULL) << id_bits_size     );
+    static constexpr i64 version_mask   = ~((~0ULL) << version_bits_size);
 };
 
 template<typename entity_mask_policy, typename = void>

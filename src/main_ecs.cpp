@@ -64,13 +64,28 @@ struct getViewArgs<Context, T, void(T::*)(typename Context::Time_t, View<Args...
     using type = mtp::List<Args...>;
 };
 */
+
+struct Pool_ { 
+    using grow_policy = ecs::instant_grow_policy; 
+    static constexpr int size = 256; 
+};
+
+struct Entities_ {
+    using mask = ecs::entity_32_mask;
+};
+
 int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
-    using C = Controller<Components_list<X>, Systems_list<Mover>, MyContext>;
+    using Ctx = Context<Components_list<X>, Systems_list<Mover>, float, Pool_, Entities_>; 
 
-    using SystMover = System<Mover, SystemMethods_list< SYST_METH(Mover::update) >>;
-    using context = Context<Components_list<>, Systems_list< Mover >, float, void, void>;
+    using C = Controller<Ctx>;
+
+    C c(SystemsConstructor<Systems_list<Mover>>(
+        std::function<Mover()>([] () { 
+            return Mover {}; 
+        }
+    )));
 
     return 0;
 }
