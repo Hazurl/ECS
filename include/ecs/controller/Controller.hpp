@@ -29,15 +29,15 @@ public:
     Controller(SC sc) {
         mtp::apply_lambda<typename Context::systems_type>{}([&] (auto s) {
             using S = typename decltype(s)::type;
-            //if constexpr (SC::has_constructor_for<S>)
-            //    systems.construct<S>(sc.construct<S>());
-            //else
-                //systems.construct<S>();
+            if constexpr (SC::template has_constructor_for<S>)
+                systems.template construct<S>(sc.template construct_system<S>());
+            else
+                systems.template construct<S>();
         });
     }
-/*
+
     Controller() : Controller(SystemsConstructor<Systems_list<>>{}) {}
-*/
+
     using Entity_t = typename EntityManager_t::Entity_t;
 
     inline Entity_t create () { 

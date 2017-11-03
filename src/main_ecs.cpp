@@ -40,14 +40,15 @@ template<typename...Args>
 struct View {};
 
 struct Mover {
-    Mover() { std::cout << "M Construction" << std::endl; } 
-    ~Mover() { std::cout << "M Destruction" << std::endl; }
+    Mover(int) { std::cout << "Mover Construction" << std::endl; } 
+    Mover(Mover const&) { std::cout << "Mover Copy" << std::endl; } 
+    ~Mover() { std::cout << "Mover Destruction" << std::endl; }
     void update(MyContext::Time_t) {
         std::cout << "update 0" << std::endl;
     }
-    /*void update(MyContext::Time_t, int) {
+    void update(MyContext::Time_t, int) {
         std::cout << "update 1" << std::endl;
-    }*/
+    }
     void _update(MyContext::Time_t) {
         std::cout << "update 2" << std::endl;
     }
@@ -77,13 +78,14 @@ struct Entities_ {
 int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
-    using Ctx = Context<Components_list<X>, Systems_list<Mover>, float, Pool_, Entities_>; 
+    using MoverSystem = System< Mover, SystemMethods_list< Methods< void(Mover::*)(MyContext::Time_t, int), &Mover::update > > >;
+    using Ctx = Context<Components_list<X>, Systems_list< MoverSystem >, float, Pool_, Entities_>; 
 
     using C = Controller<Ctx>;
 
     C c(SystemsConstructor<Systems_list<Mover>>(
         std::function<Mover()>([] () { 
-            return Mover {}; 
+            return Mover { 42 }; 
         }
     )));
 

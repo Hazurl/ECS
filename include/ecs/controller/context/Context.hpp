@@ -65,14 +65,17 @@ template<typename...Srgs>
 class SystemsConstructor<Systems_list<Srgs...>> : std::tuple<std::function<Srgs()>...> {
     template<typename S> using F = std::function<S()>;
     static_assert(mtp::unique_v<Systems_list<Srgs...>>, "Systems must be unique");
+
+    using L = Systems_list<Srgs...>;
     
 public:
 
     template<typename S>
-    static constexpr bool has_constructor_for = mtp::count_v<Systems_list<Srgs...>, S> > 0;
+    static constexpr bool has_constructor_for = mtp::count_v<L, S> > 0;
 
     SystemsConstructor(std::function<Srgs()>...funcs) {
-        assign<Srgs...>(funcs...);
+        if constexpr (mtp::size_v<L> > 0)
+            assign<Srgs...>(funcs...);
     }
 
     template<typename S>
@@ -84,13 +87,9 @@ private:
 
     template<typename S, typename...Ss>
     void assign(F<S> func, F<Ss>...funcs) {
-        assign<S>(func);
-        assign<Ss...>(funcs...);
-    }
-
-    template<typename S>
-    void assign(F<S> func) {
         std::get<F<S>>(*this) = func;
+        if constexpr (mtp::size_v<mtp::List<Ss...>> > 0)
+            assign<Ss...>(funcs...);
     }
 };
 
