@@ -2,7 +2,7 @@
 
 #include <ecs/Config.hpp>
 #include <ecs/view/View.hpp>
-#include <ecs/container/iterators/Iterator.hpp>
+#include <ecs/container/iterators/RandomRefIterator.hpp>
 
 #include <vector>
 

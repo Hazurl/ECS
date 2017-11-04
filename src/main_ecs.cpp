@@ -103,6 +103,20 @@ int main (int , char** ) {
         std::cout << x.entity() << "::X.x : " << x.get<X>().x << std::endl;
     }
 */
+
+    SparseSet<X, 16, int> set;
+
+    for (int i = 0; i < 16; i+=2) {
+        set.add(i, -i / 2);
+    }
+
+    for(auto& x : set) {
+        std::cout << x.x << std::endl;
+    }
+
+    for(auto& idx : set.keys()) {
+        std::cout << "At " << idx << " : " << set.get(idx).x << std::endl;
+    }
     
     return 0;
 }

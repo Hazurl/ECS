@@ -3,7 +3,7 @@
 #include <ecs/Config.hpp>
 #include <ecs/policy/grow_policy.hpp>
 #include <ecs/container/RawArray.hpp>
-#include <ecs/container/iterators/Iterator.hpp>
+#include <ecs/container/iterators/RandomRefIterator.hpp>
 
 #include <mtp/Utils.hpp>
 
