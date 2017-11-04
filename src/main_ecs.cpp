@@ -82,7 +82,7 @@ int main (int , char** ) {
     using Ctx = Context<Components_list<X>, Systems_list< MoverSystem >, float, Pool_, Entities_>; 
 
     using C = Controller<Ctx>;
-
+/*
     C c(SystemsConstructor<Systems_list<Mover>>(
         std::function<Mover()>([] () { 
             return Mover { 42 }; 
@@ -102,7 +102,8 @@ int main (int , char** ) {
     for (auto x : v) {
         std::cout << x.entity() << "::X.x : " << x.get<X>().x << std::endl;
     }
-
+*/
+    
     return 0;
 }
 

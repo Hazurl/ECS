@@ -24,10 +24,12 @@ class UninitializedArray<C, size, grow_policy, false> {
 template<typename C, ui32 Size>
 class UninitializedArray<C, Size, instant_grow_policy, true> {
 public:
-    using forward_iterator = Iterator<UninitializedArray<C, Size, instant_grow_policy, true>, C, true>;
-    using backward_iterator = Iterator<UninitializedArray<C, Size, instant_grow_policy, true>, C, false>;
-    using forward_const_iterator = ConstIterator<UninitializedArray<C, Size, instant_grow_policy, true>, C, true>;
-    using backward_const_iterator = ConstIterator<UninitializedArray<C, Size, instant_grow_policy, true>, C, false>;
+    using this_t = UninitializedArray<C, Size, instant_grow_policy, true>;
+
+    using forward_iterator = RandomRefIterator<this_t, C, true>;
+    using backward_iterator = RandomRefIterator<this_t, C, false>;
+    using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
+    using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
     
     C& operator [] (i32 id) {
         return data[id].cast();
@@ -47,7 +49,12 @@ public:
     backward_const_iterator crbegin() const { return backward_const_iterator(*this, 0); }
     backward_const_iterator crend() const   { return backward_const_iterator(*this, Size); }
 
-    constexpr ui32 size() { return Size; }
+    forward_const_iterator begin() const   { return forward_const_iterator(*this, 0); }
+    forward_const_iterator end() const     { return forward_const_iterator(*this, Size); }
+    backward_const_iterator rbegin() const { return backward_const_iterator(*this, 0); }
+    backward_const_iterator rend() const   { return backward_const_iterator(*this, Size); }
+
+    constexpr ui32 size() const { return Size; }
     
 private:
 
@@ -57,21 +64,21 @@ private:
 template<typename C, ui32 max_size, i32 InitialSize, i32 Factor>
 class UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true> {
 public:
-    using this_type = UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true>;
+    using this_t = UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true>;
 
-    using forward_iterator = Iterator<this_type, C, true>;
-    using backward_iterator = Iterator<this_type, C, false>;
-    using forward_const_iterator = ConstIterator<this_type, C, true>;
-    using backward_const_iterator = ConstIterator<this_type, C, false>;
+    using forward_iterator = RandomRefIterator<this_t, C, true>;
+    using backward_iterator = RandomRefIterator<this_t, C, false>;
+    using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
+    using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
 
     UninitializedArray() : data(InitialSize), _size(InitialSize) {}
     ~UninitializedArray() {}
 
-    UninitializedArray(this_type const& o) = delete;
+    UninitializedArray(this_t const& o) = delete;
 
-    UninitializedArray(this_type&& o) : data(std::move(o.data)), _size(o._size) {}
+    UninitializedArray(this_t&& o) : data(std::move(o.data)), _size(o._size) {}
 
-    this_type& operator=(this_type&& o) {
+    this_t& operator=(this_t&& o) {
         data = std::move(o.data);
         _size = o._size;
         return *this;
@@ -110,7 +117,12 @@ public:
     backward_const_iterator crbegin() const { return backward_const_iterator(*this, 0); }
     backward_const_iterator crend() const   { return backward_const_iterator(*this, _size); }
 
-    ui32 size() { return _size; }
+    forward_const_iterator begin() const   { return forward_const_iterator(*this, 0); }
+    forward_const_iterator end() const     { return forward_const_iterator(*this, _size); }
+    backward_const_iterator rbegin() const { return backward_const_iterator(*this, 0); }
+    backward_const_iterator rend() const   { return backward_const_iterator(*this, _size); }
+
+    ui32 size() const { return _size; }
 
 private:
 
@@ -121,12 +133,12 @@ private:
 template<typename C, ui32 max_size, i32 N>
 class UninitializedArray<C, max_size, bucket_grow_policy<N>, true> {
 public:
-    using this_type = UninitializedArray<C, max_size, bucket_grow_policy<N>, true>;
+    using this_t = UninitializedArray<C, max_size, bucket_grow_policy<N>, true>;
     
-    using forward_iterator = Iterator<this_type, C, true>;
-    using backward_iterator = Iterator<this_type, C, false>;
-    using forward_const_iterator = ConstIterator<this_type, C, true>;
-    using backward_const_iterator = ConstIterator<this_type, C, false>;
+    using forward_iterator = RandomRefIterator<this_t, C, true>;
+    using backward_iterator = RandomRefIterator<this_t, C, false>;
+    using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
+    using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
 
     UninitializedArray() {
         std::fill(data, data + count_bucket, nullptr);        
@@ -138,16 +150,16 @@ public:
                 delete data[i];
     }
 
-    UninitializedArray(this_type const& o) = delete;
+    UninitializedArray(this_t const& o) = delete;
 
-    UninitializedArray(this_type&& o) {
+    UninitializedArray(this_t&& o) {
         for(int i = 0; i < count_bucket; ++i)
             data[i] = (o.data[i] == nullptr) ? 
                 nullptr : 
                 new SizedRawArray<C, N>(std::move(o.data[i]));
     }
 
-    this_type& operator=(this_type&& o) {
+    this_t& operator=(this_t&& o) {
         for(int i = 0; i < count_bucket; ++i)
             data[i] = (o.data[i] == nullptr) ? 
                 nullptr : 
@@ -173,7 +185,12 @@ public:
     backward_const_iterator crbegin() const { return backward_const_iterator(*this, 0); }
     backward_const_iterator crend() const   { return backward_const_iterator(*this, max_size); }
 
-    constexpr ui32 size() { return max_size; }
+    forward_const_iterator begin() const   { return forward_const_iterator(*this, 0); }
+    forward_const_iterator end() const     { return forward_const_iterator(*this, max_size); }
+    backward_const_iterator rbegin() const { return backward_const_iterator(*this, 0); }
+    backward_const_iterator rend() const   { return backward_const_iterator(*this, max_size); }
+
+    constexpr ui32 size() const { return max_size; }
 
 private:
     i32 get_bucket_idx (i32 id) const {
