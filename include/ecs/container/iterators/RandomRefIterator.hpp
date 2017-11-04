@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ecs/Config.hpp>
-//#include <ecs/container/iterators/ConstIterator.hpp>
 
 #include <mtp/Utils.hpp>
 
