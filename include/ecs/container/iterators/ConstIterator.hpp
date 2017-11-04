@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ecs/Config.hpp>
 
 ECS_BEGIN_NS
@@ -11,7 +13,7 @@ public:
     using pointer = T*;
     using iterator_category = std::random_access_iterator_tag;
 
-    using this_t = ConstIterator<A, T>;
+    using this_t = ConstIterator<A, T, is_forward>;
 
     ConstIterator(A const& a, ui32 pos) : a(&a), pos(pos) {}
     ConstIterator() : a(nullptr), pos(0) {}

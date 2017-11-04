@@ -1,3 +1,5 @@
+#pragma once
+
 #include <ecs/Config.hpp>
 #include <ecs/container/iterators/ConstIterator.hpp>
 
@@ -12,14 +14,15 @@ public:
     using pointer = T*;
     using iterator_category = std::random_access_iterator_tag;
 
-    using this_t = Iterator<A, T>;
+    using this_t = Iterator<A, T, is_forward>;
 
     Iterator(A& a, ui32 pos) : a(&a), pos(pos) {}
     Iterator() : a(nullptr), pos(0) {}
     Iterator(const this_t& it) : a(it.a), pos(it.pos) {}
     ~Iterator() = default;
 
-    operator ConstIterator<A, T> () const { return a == nullptr ? ConstIterator<A, T>() : ConstIterator<A, T>(*a, pos); }
+    template<bool is_forw>
+    operator ConstIterator<A, T, is_forw> () const { return a == nullptr ? ConstIterator<A, T, is_forw>() : ConstIterator<A, T, is_forw>(*a, pos); }
 
     this_t& operator=(const this_t& it)     { pos = it.pos; a = it.a; return *this; }
 
@@ -62,12 +65,3 @@ private:
 };
 
 ECS_END_NS
-
-namespace std {
-
-template<typename A, typename T, bool forw0, bool forw1>
-void swap(::ecs::Iterator<A, T, forw0>& it0, ::ecs::Iterator<A, T, forw1>& it1) {
-    return swap(*it0, *it1);
-}
-
-}

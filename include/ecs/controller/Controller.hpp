@@ -5,6 +5,7 @@
 #include <ecs/entity/EntityManager.hpp>
 #include <ecs/container/Tuple.hpp>
 #include <ecs/controller/context/Context.hpp>
+#include <ecs/view/Views.hpp>
 
 #include <mtp/Utils.hpp>
 #include <mtp/list/List.hpp>
@@ -22,7 +23,28 @@ class Controller {
     using SystemsList = Tuple<typename Context::systems_type>;
 
     using Time_t = typename Context::Time_t;
-    
+
+public:
+    using Entity_t = typename EntityManager_t::Entity_t;
+/*
+private:    
+
+    template<typename C>
+    struct DynamicGetter {
+
+        DynamicGetter(Pool<C>& pool, Entity_t ent) : pool(&pool), ent(ent) {}
+
+        C& get () {
+            return pool->get(ent.id());
+        }
+        const C& get() const {
+            return pool->get(ent.id());
+        }
+
+        Pool<C>* pool;
+        Entity_t ent;
+    };
+    */
 public:
 
     template<typename SC>
@@ -37,8 +59,6 @@ public:
     }
 
     Controller() : Controller(SystemsConstructor<Systems_list<>>{}) {}
-
-    using Entity_t = typename EntityManager_t::Entity_t;
 
     inline Entity_t create () { 
         return entityManager.create();
@@ -105,42 +125,36 @@ public:
         });
     }
 
-private:
+    template<typename C>
+    Views<Pool, Entity_t, C> views () {
+        return { std::tuple<Pool<C>&>( get_pool<C>() ) };
+    }
+
 /*
-    template<typename...ViewComponents>
-    class View {
-        using ViewComponentsList = mtp::List<ViewComponents...>;
-
-    public:
-
-        View(Entity_t ent, std::tuple<ViewComponents*...> const& components) : ent(ent), components(components) {}
-        ~View() = default;
-
-        Entity_t entity() const { return ent; }
-
-        template<typename C, typename = std::enable_if_t<mtp::index_of_v<ViewComponentsList, C> != -1>>
-        C& get() {
-            return *std::get<C*>(components);
+    template<typename C>
+    std::vector<StaticView<Entity_t, C>> getView () {
+        using V = StaticView<Entity_t, C>;
+        auto& pool = get_pool<C>();
+        std::vector<V> vect;
+        for(auto ent_comp : pool) {
+            vect.emplace_back(ent_comp.first, std::make_tuple(&ent_comp.second));
         }
+        return vect;
+    }
 
-        template<typename C, typename = std::enable_if_t<mtp::index_of_v<ViewComponentsList, C> != -1>>
-        const C& get() const {
-            return *std::get<C*>(components);
+    template<typename C>
+    std::vector<DynamicView<DynamicGetter, Entity_t, C>> getViewDyn () {
+        using V = DynamicView<DynamicGetter, Entity_t, C>;
+        auto& pool = get_pool<C>();
+        std::vector<V> vect;
+        for(auto ent_comp : pool) {
+            vect.emplace_back(ent_comp.first, std::make_tuple(DynamicGetter<C>{pool, ent_comp.first}));
         }
-
-        template<typename C, typename = std::enable_if_t<mtp::index_of_v<ViewComponentsList, C> == -1>>
-        C& get() const {
-            static_assert(mtp::index_of_v<ViewComponentsList, C> != -1, "Component requested is not in the view");
-            return reinterpret_cast<C&>(const_cast<View<ViewComponents...>&>(*this)); // don't blame me, it's just to stop cascading errors
-        }
-
-    private:
-
-        Entity_t ent;
-        std::tuple<ViewComponents*...> components;
-
-    };
+        return vect;
+    }
 */
+private:
+
     template<typename C>
     Pool<C>& get_pool() {
         return std::get<Pool<C>>(componentPools);

@@ -13,6 +13,12 @@ template<typename C, i32 size, typename E, typename grow_policy = instant_grow_p
 class ComponentPool {
 public:
 
+    using container_t = SparseSet<C, size, E, grow_policy>;
+    using forward_iterator = typename container_t::forward_iterator;
+    using backward_iterator = typename container_t::backward_iterator;
+    using forward_const_iterator = typename container_t::forward_const_iterator;
+    using backward_const_iterator = typename container_t::backward_const_iterator;
+
     void reset() {
         return pool.reset();
     }
@@ -38,19 +44,19 @@ public:
         pool.remove(entity);
     }
 
-    template<typename F>
-    void for_each(F f) {
-        pool.for_each(f);
-    }
+    forward_iterator begin()  { return pool.begin(); }
+    forward_iterator end()    { return pool.end(); }
+    backward_iterator rbegin(){ return pool.rbegin(); }
+    backward_iterator rend()  { return pool.rend(); }
 
-    template<typename F>
-    void for_each(F f) const {
-        pool.for_each(f);
-    }
+    forward_const_iterator cbegin() const   { return pool.cbegin(); }
+    forward_const_iterator cend() const     { return pool.cend(); }
+    backward_const_iterator crbegin() const { return pool.crbegin(); }
+    backward_const_iterator crend() const   { return pool.crend(); }
 
 private:
 
-    SparseSet<C, size, E, grow_policy> pool;
+    container_t pool;
     
 };
 

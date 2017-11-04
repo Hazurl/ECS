@@ -89,6 +89,20 @@ int main (int , char** ) {
         }
     )));
 
+    for (int i = 0; i < 10; i++) {
+        c.add<X>(c.create(), i);
+    }
+
+    auto v = c.views<X>();
+    for (auto x : v) {
+        std::cout << x.entity() << "::X.x : " << x.get<X>().x << std::endl;
+    }
+
+    c.add<X>(c.create(), 42);
+    for (auto x : v) {
+        std::cout << x.entity() << "::X.x : " << x.get<X>().x << std::endl;
+    }
+
     return 0;
 }
 
