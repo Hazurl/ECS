@@ -119,7 +119,7 @@ public:
     backward_const_iterator rbegin() const { return crbegin(); }
     backward_const_iterator rend() const   { return crend(); }
 
-    Keys keys()  { return Keys{this}; }
+    Keys keys() const { return Keys{this}; }
 
     ui32 size () const { return used; }
 

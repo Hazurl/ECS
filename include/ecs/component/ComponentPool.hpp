@@ -11,13 +11,7 @@ ECS_BEGIN_NS
 
 template<typename C, i32 size, typename E, typename grow_policy = instant_grow_policy>
 class ComponentPool {
-
-    using container_t = SparseSet<C, size, E, grow_policy>;
-
 public:
-
-    using forward_iterator = typename container_t::forward_iterator;
-    using forward_const_iterator = typename container_t::forward_const_iterator;
 
     void reset() {
         return pool.reset();
@@ -44,14 +38,15 @@ public:
         pool.remove(entity);
     }
 
-    forward_iterator begin()  { return pool.begin(); }
-    forward_iterator end()    { return pool.end(); }
-    forward_const_iterator cbegin() const   { return pool.cbegin(); }
-    forward_const_iterator cend() const     { return pool.cend(); }
-
+    auto begin()        { return pool.begin(); }
+    auto end()          { return pool.end(); }
+    auto cbegin() const { return pool.cbegin(); }
+    auto cend() const   { return pool.cend(); }
+    auto keys () const  { return pool.keys(); }
+    
 private:
 
-    container_t pool;
+    SparseSet<C, size, E, grow_policy> pool;
     
 };
 
