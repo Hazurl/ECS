@@ -6,6 +6,7 @@
 #include <ecs/container/Tuple.hpp>
 #include <ecs/controller/context/Context.hpp>
 #include <ecs/view/Views.hpp>
+#include <ecs/controller/MethodCaller.hpp>
 
 #include <mtp/Utils.hpp>
 #include <mtp/list/List.hpp>
@@ -17,44 +18,25 @@ ECS_BEGIN_NS
 template<typename Context>
 class Controller {
     using EntityManager_t = EntityManager<typename Context::entities_mask>;
+
     template<typename C> 
     using Pool = ComponentPool<C, Context::pools_size, typename EntityManager_t::Entity_t::T_id, typename Context::pools_grow_policy>;
     using PoolList = mtp::as_tuple<mtp::transform<typename Context::components_type, Pool>>;
+
     using SystemsList = Tuple<typename Context::systems_type>;
+    template<typename S>
+    using SystemMethods = typename mtp::at<typename Context::systems, mtp::index_of_v<typename Context::systems_type, S>>::methods;
 
     using Time_t = typename Context::Time_t;
 
 public:
     using Entity_t = typename EntityManager_t::Entity_t;
-/*
-private:    
-
-    template<typename C>
-    struct DynamicGetter {
-
-        DynamicGetter(Pool<C>& pool, Entity_t ent) : pool(&pool), ent(ent) {}
-
-        C& get () {
-            return pool->get(ent.id());
-        }
-        const C& get() const {
-            return pool->get(ent.id());
-        }
-
-        Pool<C>* pool;
-        Entity_t ent;
-    };
-    */
-public:
 
     template<typename SC>
     Controller(SC sc) {
         mtp::apply_lambda<typename Context::systems_type>{}([&] (auto s) {
             using S = typename decltype(s)::type;
-            if constexpr (SC::template has_constructor_for<S>)
-                systems.template construct<S>(sc.template construct_system<S>());
-            else
-                systems.template construct<S>();
+            systems.template construct<S>(sc.template construct_system<S>());
         });
     }
 
@@ -121,38 +103,10 @@ public:
     void update(Time_t t) {
         mtp::apply_lambda<typename Context::systems_type>{}([&] (auto x) {
             using T = typename decltype(x)::type;
-            this->get_system<T>().update(t);
+            this->update_system<T>(t);
         });
     }
 
-    template<typename C>
-    Views<Pool, Entity_t, C> views () {
-        return { std::tuple<Pool<C>&>( get_pool<C>() ) };
-    }
-
-/*
-    template<typename C>
-    std::vector<StaticView<Entity_t, C>> getView () {
-        using V = StaticView<Entity_t, C>;
-        auto& pool = get_pool<C>();
-        std::vector<V> vect;
-        for(auto ent_comp : pool) {
-            vect.emplace_back(ent_comp.first, std::make_tuple(&ent_comp.second));
-        }
-        return vect;
-    }
-
-    template<typename C>
-    std::vector<DynamicView<DynamicGetter, Entity_t, C>> getViewDyn () {
-        using V = DynamicView<DynamicGetter, Entity_t, C>;
-        auto& pool = get_pool<C>();
-        std::vector<V> vect;
-        for(auto ent_comp : pool) {
-            vect.emplace_back(ent_comp.first, std::make_tuple(DynamicGetter<C>{pool, ent_comp.first}));
-        }
-        return vect;
-    }
-*/
 private:
 
     template<typename C>
@@ -164,14 +118,27 @@ private:
     const Pool<C>& get_pool() const {
         return std::get<Pool<C>>(componentPools);
     }
-    template<typename C>
-    Pool<C>& get_system() {
-        return std::get<Pool<C>>(systems);
+    template<typename S>
+    S& get_system() {
+        return systems.get<S>();
     }
 
-    template<typename C>
-    const Pool<C>& get_system() const {
-        return std::get<Pool<C>>(systems);
+    template<typename S>
+    const S& get_system() const {
+        return systems.get<S>();
+    }
+
+    template<typename S>
+    void update_system(Time_t t) {
+        mtp::apply_lambda<SystemMethods<S>>{}([&] (auto x) {
+            using M = mtp::type_of<decltype(x)>;
+            this->update_system_method<S, typename M::type, M::function>(t);
+        });
+    }
+
+    template<typename S, typename F, F f>
+    void update_system_method(Time_t t) {
+        MethodCaller<S, F>::call(get_system<S>(), f, MethodCallerHelper{});
     }
 
     SystemsList systems;

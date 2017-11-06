@@ -43,14 +43,14 @@ struct Mover {
     Mover(int) { std::cout << "Mover Construction" << std::endl; } 
     Mover(Mover const&) { std::cout << "Mover Copy" << std::endl; } 
     ~Mover() { std::cout << "Mover Destruction" << std::endl; }
-    void update(MyContext::Time_t) {
-        std::cout << "update 0" << std::endl;
+    void update(MyContext::Time_t t) {
+        std::cout << "update 0 " << t << std::endl;
     }
-    void update(MyContext::Time_t, int) {
-        std::cout << "update 1" << std::endl;
+    void update(MyContext::Time_t t, int i) {
+        std::cout << "update 1 " << t << " " << i << std::endl;
     }
-    void _update(MyContext::Time_t) {
-        std::cout << "update 2" << std::endl;
+    void _update(MyContext::Time_t t) {
+        std::cout << "update 2 " << t << std::endl;
     }
 };
 /*
@@ -82,42 +82,15 @@ int main (int , char** ) {
     using Ctx = Context<Components_list<X>, Systems_list< MoverSystem >, float, Pool_, Entities_>; 
 
     using C = Controller<Ctx>;
-/*
+
     C c(SystemsConstructor<Systems_list<Mover>>(
         std::function<Mover()>([] () { 
             return Mover { 42 }; 
         }
     )));
 
-    for (int i = 0; i < 10; i++) {
-        c.add<X>(c.create(), i);
-    }
+    c.update(10);
 
-    auto v = c.views<X>();
-    for (auto x : v) {
-        std::cout << x.entity() << "::X.x : " << x.get<X>().x << std::endl;
-    }
-
-    c.add<X>(c.create(), 42);
-    for (auto x : v) {
-        std::cout << x.entity() << "::X.x : " << x.get<X>().x << std::endl;
-    }
-*/
-
-    SparseSet<X, 16, int> set;
-
-    for (int i = 0; i < 16; i+=2) {
-        set.add(i, -i / 2);
-    }
-
-    for(auto& x : set) {
-        std::cout << x.x << std::endl;
-    }
-
-    for(auto& idx : set.keys()) {
-        std::cout << "At " << idx << " : " << set.get(idx).x << std::endl;
-    }
-    
     return 0;
 }
 

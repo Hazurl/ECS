@@ -74,23 +74,40 @@ public:
     static constexpr bool has_constructor_for = mtp::count_v<L, S> > 0;
 
     SystemsConstructor(std::function<Srgs()>...funcs) {
-        if constexpr (mtp::size_v<L> > 0)
-            assign<Srgs...>(funcs...);
+        assign_helper<Srgs...>(funcs...);
     }
 
     template<typename S>
-    S construct_system() {
+    std::enable_if_t<(mtp::count_v<L, S> > 0),
+    S> construct_system() {
         return std::get<F<S>>(*this)();
+    }
+
+    template<typename S>
+    std::enable_if_t<(mtp::count_v<L, S> == 0),
+    S> construct_system() {
+        return S{};
     }
 
 private:
 
     template<typename S, typename...Ss>
     void assign(F<S> func, F<Ss>...funcs) {
-        std::get<F<S>>(*this) = func;
-        if constexpr (mtp::size_v<mtp::List<Ss...>> > 0)
-            assign<Ss...>(funcs...);
+        assign(func);
+        assign<Ss...>(funcs...);
     }
+
+    template<typename S>
+    void assign(F<S> func) {
+        std::get<F<S>>(*this) = func;
+    }
+
+    template<typename...Ss>
+    void assign_helper(F<Ss>...funcs) {
+        assign(funcs...);
+    }
+    
+    void assign_helper() {}
 };
 
 ECS_END_NS
