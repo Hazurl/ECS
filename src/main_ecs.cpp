@@ -39,14 +39,19 @@ using Entities_t = int[100];
 template<typename...Args>
 struct View {};
 
+template<typename E>
 struct Mover {
     Mover(int) { std::cout << "Mover Construction" << std::endl; } 
     Mover(Mover const&) { std::cout << "Mover Copy" << std::endl; } 
     ~Mover() { std::cout << "Mover Destruction" << std::endl; }
-    void update(MyContext::Time_t t) {
+
+    void update(MyContext::Time_t t, ecs::Views<E, X> const& views) {
         std::cout << "update 0 " << t << std::endl;
+        for (auto const& view : views) {
+            std::cout << "Ent " << view.entity() << " : " << view.template get<X>().x << std::endl;
+        }
     }
-    void update(MyContext::Time_t t, int i) {
+    void _update(MyContext::Time_t t, int i) {
         std::cout << "update 1 " << t << " " << i << std::endl;
     }
     void _update(MyContext::Time_t t) {
@@ -78,17 +83,24 @@ struct Entities_ {
 int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
-    using MoverSystem = System< Mover, SystemMethods_list< Methods< void(Mover::*)(MyContext::Time_t, int), &Mover::update > > >;
+    using Ent_t = Entity<Entities_::mask>;
+    using MoverSystem = System< Mover<Ent_t>, SystemMethods_list< Methods< void(Mover<Ent_t>::*)(MyContext::Time_t, ecs::Views<Ent_t, X> const& views), &Mover<Ent_t>::update > > >;
     using Ctx = Context<Components_list<X>, Systems_list< MoverSystem >, float, Pool_, Entities_>; 
 
     using C = Controller<Ctx>;
 
-    C c(SystemsConstructor<Systems_list<Mover>>(
-        std::function<Mover()>([] () { 
-            return Mover { 42 }; 
+    C c(SystemsConstructor<Systems_list<Mover<Ent_t>>>(
+        std::function<Mover<Ent_t>()>([] () { 
+            return Mover<Ent_t> { 42 }; 
         }
     )));
 
+    c.add<X>(c.create());
+    auto e = c.create();
+    c.add<X>(e, -1);
+    c.destroy(e);
+    c.add<X>(c.create(), 42);
+    
     c.update(10);
 
     return 0;

@@ -46,6 +46,10 @@ public:
         return size() == 0;
     }
 
+    Entity_t sync(typename Entity_t::T_id id) const {
+        return entities[id];
+    }
+
 private:
 
     std::vector<Entity_t> entities;

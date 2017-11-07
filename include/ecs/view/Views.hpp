@@ -11,12 +11,12 @@ ECS_BEGIN_NS
 
 template<typename Entity, typename...Cs>
 class Views {
+public:
+    
     template<typename T>
     using container_t = std::vector<T>;
 
-public:
-
-    Views(container_t<View<Entity, Cs...>> & views) : views(views) {}
+    Views(container_t<View<Entity, Cs...>> const& views) : views(views) {}
     ~Views() = default;
 
     auto begin()  { return views.begin(); }
@@ -28,7 +28,7 @@ public:
 
 private:
 
-    container_t<View<Entity, Cs...>> & views;
+    container_t<View<Entity, Cs...>> views;
 
 };
 

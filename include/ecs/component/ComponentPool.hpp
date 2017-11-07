@@ -9,7 +9,7 @@
 
 ECS_BEGIN_NS
 
-template<typename C, i32 size, typename E, typename grow_policy = instant_grow_policy>
+template<typename C, i32 Size, typename E, typename grow_policy = instant_grow_policy>
 class ComponentPool {
 public:
 
@@ -38,6 +38,10 @@ public:
         pool.remove(entity);
     }
 
+    ui32 size() const {
+        return pool.size();
+    }
+
     auto begin()        { return pool.begin(); }
     auto end()          { return pool.end(); }
     auto cbegin() const { return pool.cbegin(); }
@@ -46,7 +50,7 @@ public:
     
 private:
 
-    SparseSet<C, size, E, grow_policy> pool;
+    SparseSet<C, Size, E, grow_policy> pool;
     
 };
 

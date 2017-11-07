@@ -36,7 +36,7 @@ public:
     Controller(SC sc) {
         mtp::apply_lambda<typename Context::systems_type>{}([&] (auto s) {
             using S = typename decltype(s)::type;
-            systems.template construct<S>(sc.template construct_system<S>());
+            this->systems.template construct<S>(sc.template construct_system<S>());
         });
     }
 
@@ -47,7 +47,8 @@ public:
     }
 
     inline void destroy (Entity_t ent) { 
-        return entityManager.destroy(ent.id());
+        reset_components(ent);
+        entityManager.destroy(ent);
     }
 
     inline bool alive (Entity_t ent) const { 
@@ -107,7 +108,7 @@ public:
         });
     }
 
-private:
+//private:
 
     template<typename C>
     Pool<C>& get_pool() {
@@ -138,7 +139,38 @@ private:
 
     template<typename S, typename F, F f>
     void update_system_method(Time_t t) {
-        MethodCaller<S, F>::call(get_system<S>(), f, MethodCallerHelper{});
+        MethodCaller<S, F>::call(get_system<S>(), f, MethodCallerHelper<Entity_t, Time_t, Controller<Context>>{t, this});
+    }
+
+    friend MethodCallerHelper<Entity_t, Time_t, Controller<Context>>;
+
+    template<typename...ArgsInView>
+    Views<Entity_t, ArgsInView...> construct_views () {
+        static_assert(mtp::unique_v<mtp::List<ArgsInView...>>, "Components in the view must be uniques");
+        using Vw = View<Entity_t, ArgsInView...>;
+        using TupleVw = std::tuple<ArgsInView*...>;
+        using Main = mtp::first<mtp::List<ArgsInView...>>;
+        auto& main = get_pool<Main>();
+
+        typename Views<Entity_t, ArgsInView...>::template container_t<Vw> container {};
+        for (auto& ent_id : main.keys()) {
+            TupleVw tuple;
+            std::get<Main*>(tuple) = &main.get(ent_id);
+            bool has_failed = false;
+            mtp::apply_lambda<mtp::erase_front<mtp::List<ArgsInView...>>>{}([this, &has_failed, &tuple, ent_id] (auto x) {
+                using A = mtp::type_of<decltype(x)>;
+                auto& pool = this->get_pool<A>();
+                if (pool.has(ent_id))
+                    std::get<A*>(tuple) = &pool.get(ent_id);
+                else
+                    has_failed = true;
+            });
+
+            if (!has_failed) {
+                container.emplace_back(entityManager.sync(ent_id), std::move(tuple));
+            }
+        }
+        return Views<Entity_t, ArgsInView...>{ container };
     }
 
     SystemsList systems;

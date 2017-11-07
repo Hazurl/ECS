@@ -14,7 +14,7 @@ struct Entity {
     using T_version = uint_of_size<mask_policy::version_size>;
 
     static Entity<mask_policy> create(T_id id, T_version version) {
-        return { static_cast<T>(
+        return Entity<mask_policy> { static_cast<T>(
             (static_cast<T_version>(version & mask_policy::version_mask) << mask_policy::version_shift) |
             (static_cast<T_id     >(id      & mask_policy::id_mask     ) << mask_policy::id_shift     )
         ) };
@@ -24,7 +24,7 @@ struct Entity {
         return create(e.id(), e.version() + 1);
     }
 
-    Entity(T ent) : entity(ent) {}
+    explicit Entity(T ent) : entity(ent) {}
 
     inline T_id id() const {
         return static_cast<T_id     >((entity >> mask_policy::id_shift     ) & mask_policy::id_mask     );
