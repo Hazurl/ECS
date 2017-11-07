@@ -57,7 +57,7 @@ public:
 
     void reset() {
         for(int i = 0; i < used; ++i)
-            datas[i].~C();
+            datas.destroy(i);
         std::fill(key_to_data, key_to_data + Size, -1);
     }
 
@@ -80,13 +80,13 @@ public:
         assert(!has(id));
         key_to_data[id] = used;
         data_to_key[used] = id;
-        new (&datas[used++]) C(std::forward<Args>(args)...);
+        datas.construct(used++, std::forward<Args>(args)...);
     }
 
     void remove(Key cur_id) {
         assert(has(cur_id));
         i32 cur_pos = key_to_data[cur_id];
-        datas[cur_pos].~C();
+        datas.destroy(cur_pos);
 
         i32 last_pos = used - 1;
         Key last_id = data_to_key[last_pos];
@@ -96,7 +96,7 @@ public:
             key_to_data[cur_id] = -1;
         } else {
             datas[cur_pos] = std::move(datas[last_pos]);
-            datas[last_pos].~C();
+            datas.destroy(last_pos);
             data_to_key[cur_pos] = last_id;
             key_to_data[cur_id] = -1;
             key_to_data[last_id] = cur_pos;

@@ -44,7 +44,7 @@ struct Mover {
     Mover(Mover const&) { std::cout << "Mover Copy" << std::endl; } 
     ~Mover() { std::cout << "Mover Destruction" << std::endl; }
 
-    void update(ecs::Views<E, X> const& views) {
+    void update(ecs::Views<E, X> const& views, int) {
         std::cout << "update 0 " << std::endl;
         for (auto const& view : views) {
             std::cout << "Ent " << view.entity() << " : " << view.template get<X>().x << std::endl;
@@ -99,9 +99,26 @@ int main (int , char** ) {
     c.add<X>(e, -1);
     c.destroy(e);
     c.add<X>(c.create(), 42);
-    
-    c.update();
+
+    std::cout << "is views: " << is_views<Views<int, X>> << std::endl;
+    std::cout << "is views: " << is_views<const Views<int, X>> << std::endl;
+    std::cout << "is views: " << is_views<Views<int, X>&> << std::endl;
+    std::cout << "is views: " << is_views<const Views<int, X>&> << std::endl;
+    std::cout << "is views: " << is_views<int> << std::endl;
+    std::cout << "is views: " << is_views<const int> << std::endl;
+    std::cout << "is views: " << is_views<int&> << std::endl;
+    std::cout << "is views: " << is_views<const int&> << std::endl;
+
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<Views<int, X>>>> << std::endl;
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<const Views<int, X>>>> << std::endl;
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<Views<int, X>&>>> << std::endl;
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<const Views<int, X>&>>> << std::endl;
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<int>>> << std::endl;
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<const int>>> << std::endl;
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<int&>>> << std::endl;
+    std::cout << "is views: " << is_views<std::remove_cv_t<std::remove_reference_t<const int&>>> << std::endl;
+
+    c.update(0);
 
     return 0;
 }
-

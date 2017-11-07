@@ -23,12 +23,21 @@ struct alignas(T) RawData {
     RawData() = default;
     template<typename...Args>
     RawData(Args&&...args) {
-        this->cast() = T(std::forward<Args>(args)...);
+        construct(std::forward<Args>(args)...);
     }
 
     RawData(RawData<T> const&) = delete;
     RawData(RawData<T> && o) {
         copy_raw(o);
+    }
+
+    template<typename...Args>
+    void construct(Args&&...args) {
+        ::new (&value) T(std::forward<Args>(args)...);
+    }
+
+    void destroy() {
+        reinterpret_cast<T&>(cast()).~T();
     }
 
     RawData<T>& operator = (RawData<T> const& o) = delete;
@@ -49,6 +58,7 @@ struct alignas(T) RawData {
     T& cast() { 
         return reinterpret_cast<T&>(value); 
     }
+    
     const T& cast() const { 
         return reinterpret_cast<const T&>(value); 
     }

@@ -30,7 +30,16 @@ public:
     using backward_iterator = RandomRefIterator<this_t, C, false>;
     using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
     using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
-    
+
+    template<typename...Args>
+    void construct(i32 id, Args&&...args) {
+        data[id].construct(std::forward<Args>(args)...);
+    }
+
+    void destroy(i32 id) {
+        data[id].destroy();
+    }
+
     C& operator [] (i32 id) {
         return data[id].cast();
     }
@@ -82,6 +91,19 @@ public:
         data = std::move(o.data);
         _size = o._size;
         return *this;
+    }
+
+    template<typename...Args>
+    void construct(i32 id, Args&&...args) {
+        if (id >= _size)
+            resize(id);
+        data[id].construct(std::forward<Args>(args)...);
+    }
+
+    void destroy(i32 id) {
+        if (id >= _size)
+            resize(id);
+        data[id].destroy();
     }
 
     C& operator [] (ui32 id) {
@@ -165,6 +187,15 @@ public:
                 nullptr : 
                 new SizedRawArray<C, N>(std::move(o.data[i]));
         return *this;
+    }
+
+    template<typename...Args>
+    void construct(i32 id, Args&&...args) {
+        get_bucket(id)[id].construct(std::forward<Args>(args)...);
+    }
+
+    void destroy(i32 id) {
+        get_bucket(id)[id].destroy();
     }
 
     C& operator [] (i32 id) {

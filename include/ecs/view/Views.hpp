@@ -12,11 +12,12 @@ ECS_BEGIN_NS
 template<typename Entity, typename...Cs>
 class Views {
 public:
-    
-    template<typename T>
-    using container_t = std::vector<T>;
 
-    Views(container_t<View<Entity, Cs...>> const& views) : views(views) {}
+    using view_t = View<Entity, Cs...>;
+    using container_t = std::vector<view_t>;
+    using as_list = mtp::List<Cs...>;
+
+    Views(container_t const& views) : views(views) {}
     ~Views() = default;
 
     auto begin()  { return views.begin(); }
@@ -28,8 +29,19 @@ public:
 
 private:
 
-    container_t<View<Entity, Cs...>> views;
+    container_t views;
 
 };
+
+template<typename V>
+struct is_views_helper : mtp::boolConst<false> {
+    //mtp::ShowType<V> k;
+};
+
+template<typename E, typename...Cs>
+struct is_views_helper<Views<E, Cs...>> : mtp::boolConst<true> {};
+
+template<typename V>
+static constexpr bool is_views = is_views_helper<V>::value;
 
 ECS_END_NS
