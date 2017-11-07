@@ -17,16 +17,13 @@ using Components_list = mtp::List<Args...>;
 template<typename...Args>
 using Systems_list = mtp::List<Args...>;
 
-template<typename C, typename S, typename Time, typename Pools, typename Entities>
+template<typename C, typename S, typename Pools, typename Entities>
 struct Context {
     static_assert(mtp::AlwaysFalse<C>::value, "To use the context, give it a Components_list and a Systems_list");
 };
 
-template<typename...Crgs, typename...Srgs, typename Time, typename Pools, typename Entities>
-struct Context <Components_list<Crgs...>, Systems_list<Srgs...>, Time, Pools, Entities> {
-    // TIME
-        // type use as time, given when a system is updated
-    using Time_t = Time;
+template<typename...Crgs, typename...Srgs, typename Pools, typename Entities>
+struct Context <Components_list<Crgs...>, Systems_list<Srgs...>, Pools, Entities> {
 
     // POOLS
         // size of each pool

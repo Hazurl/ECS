@@ -31,7 +31,6 @@ struct MyContext {
     using entity_mask = ecs::entity_mask<24, 8>;
     using pool_grow_policy = ecs::instant_grow_policy;
     static constexpr ecs::i32 pool_size = 1024;
-    using Time_t = float;
 };
 /*
 using Entities_t = int[100];
@@ -45,16 +44,16 @@ struct Mover {
     Mover(Mover const&) { std::cout << "Mover Copy" << std::endl; } 
     ~Mover() { std::cout << "Mover Destruction" << std::endl; }
 
-    void update(MyContext::Time_t t, ecs::Views<E, X> const& views) {
-        std::cout << "update 0 " << t << std::endl;
+    void update(ecs::Views<E, X> const& views) {
+        std::cout << "update 0 " << std::endl;
         for (auto const& view : views) {
             std::cout << "Ent " << view.entity() << " : " << view.template get<X>().x << std::endl;
         }
     }
-    void _update(MyContext::Time_t t, int i) {
+    void _update(float t, int i) {
         std::cout << "update 1 " << t << " " << i << std::endl;
     }
-    void _update(MyContext::Time_t t) {
+    void _update(float t) {
         std::cout << "update 2 " << t << std::endl;
     }
 };
@@ -84,8 +83,8 @@ int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
     using Ent_t = Entity<Entities_::mask>;
-    using MoverSystem = System< Mover<Ent_t>, SystemMethods_list< Methods< void(Mover<Ent_t>::*)(MyContext::Time_t, ecs::Views<Ent_t, X> const& views), &Mover<Ent_t>::update > > >;
-    using Ctx = Context<Components_list<X>, Systems_list< MoverSystem >, float, Pool_, Entities_>; 
+    using MoverSystem = System< Mover<Ent_t>, SystemMethods_list< SYST_METH(Mover<Ent_t>::update) > >;
+    using Ctx = Context<Components_list<X>, Systems_list< MoverSystem >, Pool_, Entities_>; 
 
     using C = Controller<Ctx>;
 
@@ -101,7 +100,7 @@ int main (int , char** ) {
     c.destroy(e);
     c.add<X>(c.create(), 42);
     
-    c.update(10);
+    c.update();
 
     return 0;
 }

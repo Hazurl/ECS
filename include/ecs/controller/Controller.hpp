@@ -7,6 +7,7 @@
 #include <ecs/controller/context/Context.hpp>
 #include <ecs/view/Views.hpp>
 #include <ecs/controller/MethodCaller.hpp>
+#include <ecs/controller/context/ArgsGetter.hpp>
 
 #include <mtp/Utils.hpp>
 #include <mtp/list/List.hpp>
@@ -23,12 +24,19 @@ class Controller {
     using Pool = ComponentPool<C, Context::pools_size, typename EntityManager_t::Entity_t::T_id, typename Context::pools_grow_policy>;
     using PoolList = mtp::as_tuple<mtp::transform<typename Context::components_type, Pool>>;
 
-    using SystemsList = Tuple<typename Context::systems_type>;
     template<typename S>
     using SystemMethods = typename mtp::at<typename Context::systems, mtp::index_of_v<typename Context::systems_type, S>>::methods;
+    using SystemsList = Tuple<typename Context::systems_type>;
 
-    using Time_t = typename Context::Time_t;
+    using ArgsList = ArgsGetter<mtp::flatten<
+                                mtp::transform<
+                                mtp::transform<
+                                    typename Context::systems, mtp::type_of
+                                >, SystemMethods
+                                >>>;
 
+    mtp::ShowType<ArgsList> __s;
+    
 public:
     using Entity_t = typename EntityManager_t::Entity_t;
 
@@ -101,10 +109,11 @@ public:
         return get_pool<C>().remove(ent.id());
     }
 
-    void update(Time_t t) {
+    template<typename...Args>
+    void update(Args&&...args) {
         mtp::apply_lambda<typename Context::systems_type>{}([&] (auto x) {
             using T = typename decltype(x)::type;
-            this->update_system<T>(t);
+            this->update_system<T>();
         });
     }
 
@@ -130,19 +139,19 @@ public:
     }
 
     template<typename S>
-    void update_system(Time_t t) {
+    void update_system() {
         mtp::apply_lambda<SystemMethods<S>>{}([&] (auto x) {
             using M = mtp::type_of<decltype(x)>;
-            this->update_system_method<S, typename M::type, M::function>(t);
+            this->update_system_method<S, typename M::type, M::function>();
         });
     }
 
     template<typename S, typename F, F f>
-    void update_system_method(Time_t t) {
-        MethodCaller<S, F>::call(get_system<S>(), f, MethodCallerHelper<Entity_t, Time_t, Controller<Context>>{t, this});
+    void update_system_method() {
+        MethodCaller<S, F>::call(get_system<S>(), f, MethodCallerHelper<Entity_t, Controller<Context>>{this});
     }
 
-    friend MethodCallerHelper<Entity_t, Time_t, Controller<Context>>;
+    friend MethodCallerHelper<Entity_t, Controller<Context>>;
 
     template<typename...ArgsInView>
     Views<Entity_t, ArgsInView...> construct_views () {
