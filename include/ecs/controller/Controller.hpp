@@ -28,7 +28,18 @@ class Controller {
     using SystemMethods = typename mtp::at<typename Context::systems, mtp::index_of_v<typename Context::systems_type, S>>::methods;
     using SystemsList = Tuple<typename Context::systems_type>;
 
-    using ArgsList = ArgsGetter< mtp::flatten< mtp::transform< mtp::transform< typename Context::systems, mtp::type_of >, SystemMethods >>>;
+    using ArgsList = 
+        mtp::transform<
+            ArgsGetter< 
+                mtp::flatten< 
+                    mtp::transform< 
+                        mtp::transform< 
+                            typename Context::systems, mtp::type_of 
+                        >, SystemMethods 
+                    >
+                >
+            >, mtp::remove_qualifiers
+        >;
     
 public:
     using Entity_t = typename EntityManager_t::Entity_t;
@@ -145,7 +156,6 @@ public:
     template<typename Arg>
     void update_arg(Arg&& arg) {
         if /* constexpr */ (mtp::count_v<ArgsList, Arg> > 0) {
-            std::cout << "Set Arg" << std::endl;
             all_args.template reconstruct<Arg>(std::forward<Arg>(arg));
         }
     }
@@ -153,15 +163,12 @@ public:
     void update_views_args() {
         mtp::apply_lambda<ArgsList>{}([this] (auto x) {
             using X = mtp::type_of<decltype(x)>;
-            this->update_views_arg<X>(mtp::bool_<is_views<std::remove_reference_t<std::remove_const_t<X>>>>{});
-            std::cout << "is Views ? " << is_views<X> << " '" << typeid(X).name() << "'" << std::endl;
+            this->update_views_arg<X>(is_views<mtp::remove_qualifiers<X>>{});
         });
     }
 
     template<typename V>
     void update_views_arg(mtp::True) {
-        mtp::ShowType<V> _s;
-        std::cout << "Construct View" << std::endl;
         all_args.template reconstruct<V>(construct_views<V>());
     }
 
@@ -181,7 +188,7 @@ public:
         //MethodCaller<S, F>::call(get_system<S>(), f, MethodCallerHelper<Entity_t, Controller<Context>>{this});
     }
 
-    template<typename V, typename List_Views_Args = typename V::as_list>
+    template<typename V, typename List_Views_Args = typename V::list_t>
     V construct_views () {
         static_assert(mtp::unique_v<List_Views_Args>, "Components in the view must be uniques");
         using TupleVw = mtp::as_tuple<mtp::transform<List_Views_Args, mtp::add_ptr>>;

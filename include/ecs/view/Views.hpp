@@ -15,7 +15,7 @@ public:
 
     using view_t = View<Entity, Cs...>;
     using container_t = std::vector<view_t>;
-    using as_list = mtp::List<Cs...>;
+    using list_t = mtp::List<Cs...>;
 
     Views(container_t const& views) : views(views) {}
     ~Views() = default;
@@ -34,14 +34,12 @@ private:
 };
 
 template<typename V>
-struct is_views_helper : mtp::False {
-    //mtp::ShowType<V> k;
-};
+struct is_views : mtp::False {};
 
 template<typename E, typename...Cs>
-struct is_views_helper<Views<E, Cs...>> : mtp::True {};
+struct is_views<Views<E, Cs...>> : mtp::True {};
 
 template<typename V>
-static constexpr bool is_views = is_views_helper<V>::value;
+static constexpr bool is_views_v = is_views<V>::value;
 
 ECS_END_NS
