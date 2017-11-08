@@ -23,7 +23,7 @@ struct entity_mask {
 };
 
 template<typename entity_mask_policy, typename = void>
-struct is_entity_mask_policy : mtp::boolConst<false> {};
+struct is_entity_mask_policy : mtp::False {};
 
 template<typename entity_mask_policy>
 struct is_entity_mask_policy<entity_mask_policy, mtp::Nothing<
@@ -35,7 +35,7 @@ struct is_entity_mask_policy<entity_mask_policy, mtp::Nothing<
         mtp::Constant<i64, entity_mask_policy::version_shift>,
         mtp::Constant<i64, entity_mask_policy::id_mask>,
         mtp::Constant<i64, entity_mask_policy::version_mask>
-    >> : mtp::boolConst<true> {};
+    >> : mtp::True {};
 
 using entity_32_mask = entity_mask<24, 8>;
 

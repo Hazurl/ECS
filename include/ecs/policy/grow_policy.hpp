@@ -24,12 +24,12 @@ struct growing_grow_policy {
 };
 
 template<typename grow_policy, typename = void>
-struct is_grow_policy : mtp::boolConst<false> {};
+struct is_grow_policy : mtp::False {};
 
 template<typename grow_policy>
 struct is_grow_policy<grow_policy, mtp::Nothing<
         std::enable_if_t<std::is_same<typename grow_policy::tag, tag_grow_policy>::value>
-    >> : mtp::boolConst<true> {};
+    >> : mtp::True {};
 
 static_assert(is_grow_policy<bucket_grow_policy<64>>::value, "!");
 static_assert(is_grow_policy<growing_grow_policy<64>>::value, "!");

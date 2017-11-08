@@ -153,20 +153,20 @@ public:
     void update_views_args() {
         mtp::apply_lambda<ArgsList>{}([this] (auto x) {
             using X = mtp::type_of<decltype(x)>;
-            this->update_views_arg<X>(mtp::boolConst<is_views<std::remove_reference_t<std::remove_const_t<X>>>>{});
+            this->update_views_arg<X>(mtp::bool_<is_views<std::remove_reference_t<std::remove_const_t<X>>>>{});
             std::cout << "is Views ? " << is_views<X> << " '" << typeid(X).name() << "'" << std::endl;
         });
     }
 
     template<typename V>
-    void update_views_arg(mtp::boolConst<true>) {
+    void update_views_arg(mtp::True) {
         mtp::ShowType<V> _s;
         std::cout << "Construct View" << std::endl;
         all_args.template reconstruct<V>(construct_views<V>());
     }
 
     template<typename V>
-    void update_views_arg(mtp::boolConst<false>) {}
+    void update_views_arg(mtp::False) {}
 
     template<typename S>
     void update_system() {

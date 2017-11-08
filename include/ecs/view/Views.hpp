@@ -34,12 +34,12 @@ private:
 };
 
 template<typename V>
-struct is_views_helper : mtp::boolConst<false> {
+struct is_views_helper : mtp::False {
     //mtp::ShowType<V> k;
 };
 
 template<typename E, typename...Cs>
-struct is_views_helper<Views<E, Cs...>> : mtp::boolConst<true> {};
+struct is_views_helper<Views<E, Cs...>> : mtp::True {};
 
 template<typename V>
 static constexpr bool is_views = is_views_helper<V>::value;
