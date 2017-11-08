@@ -83,7 +83,10 @@ int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
     using Ent_t = Entity<Entities_::mask>;
-    using MoverSystem = System< Mover<Ent_t>, SystemMethods_list< SYST_METH(Mover<Ent_t>::update) > >;
+    using Mover_t = Mover<Ent_t>;
+    using MoverSystem = System< Mover_t, SystemMethods_list<
+        Methods<void (Mover_t::*)(ecs::Views<Ent_t, X> const& views, int), &Mover_t::update>
+    > >;
     using Ctx = Context<Components_list<X>, Systems_list< MoverSystem >, Pool_, Entities_>; 
 
     using C = Controller<Ctx>;

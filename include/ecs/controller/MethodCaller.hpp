@@ -7,29 +7,6 @@
 #include <tuple>
 
 ECS_BEGIN_NS
-
-template<typename Entity_t, typename ViewHelper>
-class MethodCallerHelper {
-public:
-
-    MethodCallerHelper(ViewHelper* viewHelper) : viewHelper(viewHelper) {}
-
-    ViewHelper* viewHelper;
-
-};
-
-template<typename H, typename T>
-class GetArg;
-
-template<typename Entity_t, typename ViewHelper, typename...ArgsInView>
-class GetArg<MethodCallerHelper<Entity_t, ViewHelper>, Views<Entity_t, ArgsInView...>> {
-public:
-    
-    static Views<Entity_t, ArgsInView...> get(MethodCallerHelper<Entity_t, ViewHelper> m) {
-        return m.viewHelper->template construct_views<ArgsInView...>();
-    }
-};
-
 template<typename T, typename M>
 class MethodCaller;
 
@@ -38,10 +15,14 @@ class MethodCaller<T, R(T::*)(Args...)> {
 public:
 
     using Method = R(T::*)(Args...);
+/*
+    template<typename H>
+    static void call(T& , Method, H & ) {
+    }*/
 
     template<typename H>
-    static R call(T& t, Method m, H args_helper) {
-        return (t.*m)(GetArg<H, std::remove_const_t<std::remove_reference_t<Args>>>::get(args_helper)...);
+    static void call(T& t, Method m, H & args_helper) {
+        return (t.*m)((args_helper.template get<mtp::remove_qualifiers<Args>>())...);
     }
 
 };

@@ -17,7 +17,9 @@ public:
     using container_t = std::vector<view_t>;
     using list_t = mtp::List<Cs...>;
 
-    Views(container_t const& views) : views(views) {}
+    Views(container_t const& views) : views(views) {
+        std::cout << "Views constructed, size: " << views.size() << std::endl;
+    }
     ~Views() = default;
 
     auto begin()  { return views.begin(); }

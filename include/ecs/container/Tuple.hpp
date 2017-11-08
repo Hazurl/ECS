@@ -59,28 +59,36 @@ class Tuple : private Tuple_helper<0, Args...> {
 public:
 
     template<typename T, typename...Brgs>
-    std::enable_if_t<mtp::index_of_v<mtp::List<Args...>, T> != -1, 
+    std::enable_if_t<mtp::in_v<mtp::List<Args...>, T>, 
     T& > construct (Brgs&&...brgs) {
         Tuple_singleton<mtp::index_of_v<mtp::List<Args...>, T>, T>::construct_it(std::forward<Brgs>(brgs)...);
         return get<T>();
     }
 
     template<typename T, typename...Brgs>
-    std::enable_if_t<mtp::index_of_v<mtp::List<Args...>, T> != -1, 
+    std::enable_if_t<mtp::in_v<mtp::List<Args...>, T>, 
     T& > reconstruct (Brgs&&...brgs) {
         Tuple_singleton<mtp::index_of_v<mtp::List<Args...>, T>, T>::reconstruct_it(std::forward<Brgs>(brgs)...);
         return get<T>();
     }
 
     template<typename T>
-    std::enable_if_t<mtp::index_of_v<mtp::List<Args...>, T> != -1, 
+    std::enable_if_t<mtp::in_v<mtp::List<Args...>, T>, 
     T& > get () {
         return Tuple_singleton<mtp::index_of_v<mtp::List<Args...>, T>, T>::value.cast();
     }
 
 };
 
+template<typename L>
+class Tuple_from_list_helper : public mtp::TConst<Tuple<>> {
+    static_assert(mtp::AlwaysFalse<L>::value, "Tuple_from_list want a List in argument");
+};
+
 template<typename...Args>
-class Tuple<mtp::List<Args...>> : public Tuple<Args...> {};
+class Tuple_from_list_helper<mtp::List<Args...>> : public mtp::TConst<Tuple<Args...>> {};
+
+template<typename L>
+using Tuple_from_list = mtp::type_of<Tuple_from_list_helper<L>>;
 
 ECS_END_NS

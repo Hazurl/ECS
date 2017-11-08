@@ -23,13 +23,6 @@ template<typename T, typename M>
 struct System {
     using type = T;
     using methods = M;
-/*
-    constexpr static void call () {
-        mtp::apply_lambda<methods>{}([] (auto x) {
-            T t;
-            mtp::type_of<decltype(x)>::call(t, 42);
-        });
-    }*/
 };
 
 template<typename...Args>

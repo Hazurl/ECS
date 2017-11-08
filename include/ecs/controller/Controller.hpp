@@ -26,7 +26,7 @@ class Controller {
 
     template<typename S>
     using SystemMethods = typename mtp::at<typename Context::systems, mtp::index_of_v<typename Context::systems_type, S>>::methods;
-    using SystemsList = Tuple<typename Context::systems_type>;
+    using SystemsList = Tuple_from_list<typename Context::systems_type>;
 
     using ArgsList = 
         mtp::transform<
@@ -114,12 +114,12 @@ public:
     }
 
     template<typename...Args>
-    void update(Args&&...args) {/*
+    void update(Args&&...args) {
+        update_args(std::forward<Args>(args)...);
         mtp::apply_lambda<typename Context::systems_type>{}([&] (auto x) {
             using T = typename decltype(x)::type;
             this->update_system<T>();
-        });*/
-        update_args(std::forward<Args>(args)...);
+        });
     }
 
 private:
@@ -155,7 +155,7 @@ private:
 
     template<typename Arg>
     void update_arg(Arg&& arg) {
-        if /* constexpr */ (mtp::count_v<ArgsList, Arg> > 0) {
+        if /* constexpr */ (mtp::in_v<ArgsList, Arg>) {
             all_args.template reconstruct<Arg>(std::forward<Arg>(arg));
         }
     }
@@ -179,15 +179,15 @@ private:
     void update_system() {
         mtp::apply_lambda<SystemMethods<S>>{}([&] (auto x) {
             using M = mtp::type_of<decltype(x)>;
-            this->update_system_method<S, typename M::type, M::function>();
+            MethodCaller<S, typename M::type>::call(this->get_system<S>(), M::function, this->all_args);
         });
     }
-
+/*
     template<typename S, typename F, F f>
     void update_system_method() {
-        //MethodCaller<S, F>::call(get_system<S>(), f, MethodCallerHelper<Entity_t, Controller<Context>>{this});
+        //MethodCaller<S, F>::call(get_system<S>(), f, all_args);
     }
-
+*/
     template<typename V, typename List_Views_Args = typename V::list_t>
     V construct_views () {
         static_assert(mtp::unique_v<List_Views_Args>, "Components in the view must be uniques");
@@ -220,7 +220,7 @@ private:
     PoolList componentPools;
     EntityManager_t entityManager;
 
-    Tuple<ArgsList> all_args;
+    Tuple_from_list<ArgsList> all_args;
     
 };
 
