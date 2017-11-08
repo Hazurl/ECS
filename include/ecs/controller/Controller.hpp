@@ -122,7 +122,7 @@ public:
         update_args(std::forward<Args>(args)...);
     }
 
-//private:
+private:
 
     template<typename C>
     Pool<C>& get_pool() {

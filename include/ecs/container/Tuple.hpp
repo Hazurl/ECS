@@ -34,7 +34,7 @@ protected:
     template<typename...Args>
     void destroy_it (Args&&...args) {
         assert(has_been_contructed);
-        //value.destroy();
+        value.destroy();
         has_been_contructed = false;
     }
 

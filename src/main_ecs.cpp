@@ -100,24 +100,6 @@ int main (int , char** ) {
     c.destroy(e);
     c.add<X>(c.create(), 42);
 
-    std::cout << "is views: " << is_views_v<Views<int, X>> << std::endl;
-    std::cout << "is views: " << is_views_v<const Views<int, X>> << std::endl;
-    std::cout << "is views: " << is_views_v<Views<int, X>&> << std::endl;
-    std::cout << "is views: " << is_views_v<const Views<int, X>&> << std::endl;
-    std::cout << "is views: " << is_views_v<int> << std::endl;
-    std::cout << "is views: " << is_views_v<const int> << std::endl;
-    std::cout << "is views: " << is_views_v<int&> << std::endl;
-    std::cout << "is views: " << is_views_v<const int&> << std::endl;
-
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<Views<int, X>>> << std::endl;
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<const Views<int, X>>> << std::endl;
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<Views<int, X>&>> << std::endl;
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<const Views<int, X>&>> << std::endl;
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<int>> << std::endl;
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<const int>> << std::endl;
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<int&>> << std::endl;
-    std::cout << "is views: " << is_views_v<mtp::remove_qualifiers<const int&>> << std::endl;
-
     c.update(0);
 
     return 0;
