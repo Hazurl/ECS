@@ -1,13 +1,18 @@
 #pragma once
 
 #include <ecs/Config.hpp>
-#include <ecs/component/ComponentPool.hpp>
-#include <ecs/entity/EntityManager.hpp>
 #include <ecs/container/Tuple.hpp>
+
+#include <ecs/entity/EntityManager.hpp>
+#include <ecs/entity/EntitiesController.hpp>
+
 #include <ecs/controller/context/Context.hpp>
-#include <ecs/view/Views.hpp>
 #include <ecs/controller/MethodCaller.hpp>
 #include <ecs/controller/context/ArgsGetter.hpp>
+
+#include <ecs/view/Views.hpp>
+
+#include <ecs/component/ComponentPool.hpp>
 
 #include <mtp/Utils.hpp>
 #include <mtp/list/List.hpp>
@@ -16,8 +21,30 @@
 
 ECS_BEGIN_NS
 
+
+using Unknown_arg = mtp::i32_<-1>;    
+using Views_arg = mtp::i32_<0>;
+using Controller_arg = mtp::i32_<1>;
+
+template<typename T>
+struct TypeOfArg : Unknown_arg {};
+
+template<typename...Args>
+struct TypeOfArg<Views<Args...>> : Views_arg {};
+
+template<typename>
+class Controller;
+
+template<typename Context>
+struct TypeOfArg<EntitiesController<Controller<Context>>> : Controller_arg {};
+
+
 template<typename Context>
 class Controller {
+    
+    using this_t = Controller<Context>;
+
+    using EntitiesController_t = EntitiesController<this_t>;
     using EntityManager_t = EntityManager<typename Context::entities_mask>;
 
     template<typename C> 
@@ -120,6 +147,7 @@ public:
             using T = typename decltype(x)::type;
             this->update_system<T>();
         });
+        update_entities(mtp::in<ArgsList, EntitiesController_t>{});
     }
 
 private:
@@ -163,17 +191,22 @@ private:
     void update_views_args() {
         mtp::apply_lambda<ArgsList>{}([this] (auto x) {
             using X = mtp::type_of<decltype(x)>;
-            this->update_views_arg<X>(is_views<mtp::remove_qualifiers<X>>{});
+            this->update_arg_special<X>(TypeOfArg<mtp::remove_qualifiers<X>>{});
         });
     }
 
     template<typename V>
-    void update_views_arg(mtp::True) {
+    void update_arg_special(Views_arg) {
         all_args.template reconstruct<V>(construct_views<V>());
     }
 
-    template<typename V>
-    void update_views_arg(mtp::False) {}
+    template<typename C>
+    void update_arg_special(Controller_arg) {
+        all_args.template reconstruct<C>();
+    }
+
+    template<typename>
+    void update_arg_special(Unknown_arg) {}
 
     template<typename S>
     void update_system() {
@@ -182,12 +215,15 @@ private:
             MethodCaller<S, typename M::type>::call(this->get_system<S>(), M::function, this->all_args);
         });
     }
-/*
-    template<typename S, typename F, F f>
-    void update_system_method() {
-        //MethodCaller<S, F>::call(get_system<S>(), f, all_args);
+
+    void update_entities(mtp::False) {}    
+    void update_entities(mtp::True) {
+        std::cout << "Start (" << all_args.get<EntitiesController_t>().funcs.size() << ")" << std::endl;
+        for(auto& func : all_args.get<EntitiesController_t>().funcs) {
+            func(*this);
+        }
     }
-*/
+
     template<typename V, typename List_Views_Args = typename V::list_t>
     V construct_views () {
         static_assert(mtp::unique_v<List_Views_Args>, "Components in the view must be uniques");

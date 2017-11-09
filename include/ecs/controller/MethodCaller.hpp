@@ -15,10 +15,6 @@ class MethodCaller<T, R(T::*)(Args...)> {
 public:
 
     using Method = R(T::*)(Args...);
-/*
-    template<typename H>
-    static void call(T& , Method, H & ) {
-    }*/
 
     template<typename H>
     static void call(T& t, Method m, H & args_helper) {
