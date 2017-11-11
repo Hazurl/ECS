@@ -6,6 +6,10 @@
 #define ECS_BEGIN_NS namespace ecs {
 #define ECS_END_NS }
 
+#define ECS_NS_CTX ctx
+#define ECS_BEGIN_NS_CTX namespace ctx {
+#define ECS_END_NS_CTX }
+
 ECS_BEGIN_NS
 
 using i8 = signed char;

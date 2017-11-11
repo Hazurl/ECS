@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ecs/Config.hpp>
-#include <ecs/controller/context/Systems.hpp>
+#include <ecs/context/Systems.hpp>
 #include <ecs/container/Tuple.hpp>
 #include <ecs/policy/grow_policy.hpp>
 #include <ecs/policy/mask_policy.hpp>

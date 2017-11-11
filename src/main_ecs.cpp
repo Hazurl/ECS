@@ -1,6 +1,6 @@
 #include <ecs/Config.hpp>
 #include <ecs/controller/Controller.hpp>
-#include <ecs/controller/context/Context.hpp>
+#include <ecs/context/Context.hpp>
 #include <ecs/container/Tuple.hpp>
 #include <ecs/entity/EntitiesController.hpp>
 
@@ -45,7 +45,7 @@ struct Mover {
     Mover(Mover const&) { std::cout << "Mover Copy" << std::endl; } 
     ~Mover() { std::cout << "Mover Destruction" << std::endl; }
 
-    void update(ecs::Views<E, X> const& views, int, ) {
+    void update(ecs::Views<E, X> const& views, int) {
         std::cout << "update 0 " << std::endl;
         for (auto const& view : views) {
             std::cout << "Ent " << view.entity() << " : " << view.template get<X>().x << std::endl;

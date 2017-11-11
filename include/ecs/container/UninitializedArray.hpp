@@ -28,8 +28,8 @@ public:
 
     using forward_iterator = RandomRefIterator<this_t, C, true>;
     using backward_iterator = RandomRefIterator<this_t, C, false>;
-    using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
-    using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
+    using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
+    using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 
     template<typename...Args>
     void construct(i32 id, Args&&...args) {
@@ -77,8 +77,8 @@ public:
 
     using forward_iterator = RandomRefIterator<this_t, C, true>;
     using backward_iterator = RandomRefIterator<this_t, C, false>;
-    using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
-    using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
+    using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
+    using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 
     UninitializedArray() : data(InitialSize), _size(InitialSize) {}
     ~UninitializedArray() {}
@@ -159,8 +159,8 @@ public:
     
     using forward_iterator = RandomRefIterator<this_t, C, true>;
     using backward_iterator = RandomRefIterator<this_t, C, false>;
-    using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
-    using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
+    using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
+    using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 
     UninitializedArray() {
         std::fill(data, data + count_bucket, nullptr);        

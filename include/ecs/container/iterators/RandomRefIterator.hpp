@@ -7,7 +7,7 @@
 ECS_BEGIN_NS
 
 template<typename A, typename T, bool is_forward = true>
-class ConstRandomRefIterator { 
+class ConstRandomIterator { 
 public:
     using difference_type = std::ptrdiff_t;
     using ret_type_const_ptr = const T*;
@@ -16,12 +16,12 @@ public:
     using type_ptr = const A*;
     using iterator_category = std::random_access_iterator_tag;
 
-    using this_t = ConstRandomRefIterator<A, T, is_forward>;
+    using this_t = ConstRandomIterator<A, T, is_forward>;
     
-    ConstRandomRefIterator(type_ref a, ui32 pos) : a(&a), pos(pos) {}
-    ConstRandomRefIterator() : a(nullptr), pos(0) {}
-    ConstRandomRefIterator(const this_t& it) : a(it.a), pos(it.pos) {}
-    ~ConstRandomRefIterator() = default;
+    ConstRandomIterator(type_ref a, ui32 pos) : a(&a), pos(pos) {}
+    ConstRandomIterator() : a(nullptr), pos(0) {}
+    ConstRandomIterator(const this_t& it) : a(it.a), pos(it.pos) {}
+    ~ConstRandomIterator() = default;
 
     this_t& operator=(const this_t& it)     { pos = it.pos; a = it.a; return *this; }
 
@@ -108,7 +108,7 @@ public:
     ret_type_ptr operator->()      { return &*(*this); }
     ret_type_ref operator[](ui32 p){ return *((*this) + p); }
 
-    operator ConstRandomRefIterator<A, T, is_forward> () const { return a == nullptr ? ConstRandomRefIterator<A, T, is_forward>() : ConstRandomRefIterator<A, T, is_forward>(*a, pos); }
+    operator ConstRandomIterator<A, T, is_forward> () const { return a == nullptr ? ConstRandomIterator<A, T, is_forward>() : ConstRandomIterator<A, T, is_forward>(*a, pos); }
     
 private:
     

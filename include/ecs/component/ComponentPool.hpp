@@ -30,8 +30,9 @@ public:
     }
 
     template<typename...Args>
-    void add(E entity, Args&&... args) {
+    C& add(E entity, Args&&... args) {
         pool.add(entity, std::forward<Args>(args)...);
+        return get(entity);
     }
 
     void remove(E entity) {

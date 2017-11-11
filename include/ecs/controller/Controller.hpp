@@ -6,9 +6,9 @@
 #include <ecs/entity/EntityManager.hpp>
 #include <ecs/entity/EntitiesController.hpp>
 
-#include <ecs/controller/context/Context.hpp>
+#include <ecs/context/Context.hpp>
 #include <ecs/controller/MethodCaller.hpp>
-#include <ecs/controller/context/ArgsGetter.hpp>
+#include <ecs/context/ArgsGetter.hpp>
 
 #include <ecs/view/Views.hpp>
 
@@ -104,7 +104,10 @@ public:
 
     template<typename...Comps>
     inline void reset_components(Entity_t ent) {
-        mtp::apply_lambda<typename Context::components_type>{}([&] (auto x) {
+        mtp::apply_lambda<
+        mtp::switch_t<mtp::empty_v<mtp::List<Comps...>>, // is Comps is empty, then reset all components
+                      typename Context::components_type, 
+                      mtp::List<Comps...>>>{}([&] (auto x) {
             using T = typename decltype(x)::type;
             this->get_pool<T>().remove(ent.id());
         });
@@ -126,12 +129,12 @@ public:
     }
 
     template<typename C, typename...Args>
-    void add(Entity_t ent, Args&&... args) {
+    C& add(Entity_t ent, Args&&... args) {
         return get_pool<C>().add(ent.id(), std::forward<Args>(args)...);
     }
 
     template<typename C, typename...Args>
-    void ensure(Entity_t ent, Args&&... args) {
+    C& ensure(Entity_t ent, Args&&... args) {
         return has_component<C>(ent) ? get<C>(ent) : get_pool<C>().add(ent.id(), std::forward<Args>(args)...);
     }
 

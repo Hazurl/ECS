@@ -15,13 +15,13 @@ public:
     using container_t = UninitializedArray<C, Size, grow_policy>;
     using forward_iterator = RandomRefIterator<this_t, C, true>;
     using backward_iterator = RandomRefIterator<this_t, C, false>;
-    using forward_const_iterator = ConstRandomRefIterator<this_t, C, true>;
-    using backward_const_iterator = ConstRandomRefIterator<this_t, C, false>;
+    using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
+    using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 
     struct Keys {
 
-        using forward_const_iterator = ConstRandomRefIterator<Keys, Key, true>;
-        using backward_const_iterator = ConstRandomRefIterator<Keys, Key, false>;
+        using forward_const_iterator = ConstRandomIterator<Keys, Key, true>;
+        using backward_const_iterator = ConstRandomIterator<Keys, Key, false>;
 
         forward_const_iterator cbegin() const   { return forward_const_iterator(*this, 0); }
         forward_const_iterator cend() const     { return forward_const_iterator(*this, size()); }
