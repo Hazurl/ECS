@@ -6,10 +6,10 @@
 
 ECS_BEGIN_NS
 
-#define SYST_METH(x...) Methods<decltype(&x), (&x)>
+#define SYST_METH(x...) Method<decltype(&x), (&x)>
 
 template<typename F, F f>
-struct Methods {
+struct Method {
     using type = F;
     static constexpr F function = f;
 /*
