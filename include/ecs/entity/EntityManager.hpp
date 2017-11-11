@@ -7,15 +7,15 @@
 
 ECS_BEGIN_NS
 
-template<typename entity_policy>
+template<typename entity_t>
 class EntityManager {
 public:
 
-    using Entity_t = Entity<entity_policy>;
+    using Entity_t = entity_t;
 
     Entity_t create() {
         if (free_list.empty()) {
-            auto ent = Entity_t::create(entities.size(), 0);
+            Entity_t ent(entities.size(), 0);
             entities.push_back(ent);
             return ent;
         } else {
