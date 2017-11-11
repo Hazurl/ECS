@@ -17,7 +17,7 @@ struct InsertIfNotIn : public InsertIfNotInHelper<L, T, mtp::count_v<L, T>> {};
 
 template<typename L0, typename L1>
 struct MergeUniqueList {
-    static_assert(mtp::AlwaysFalse<L0>::value, "!");
+    static_assert(mtp::AlwaysFalse<L0>::value, "Can only merge two lists");
 };
 
 template<typename...Args, typename B, typename...Brgs>
@@ -28,15 +28,18 @@ struct MergeUniqueList<mtp::List<Args...>, mtp::List<>> : public mtp::TConst<mtp
 
 template<typename F>
 struct ListOfArgs{
-    static_assert(mtp::AlwaysFalse<F>::value, "!");
+    static_assert(mtp::AlwaysFalse<F>::value, "A method is needed...");
 };
 
 template<typename R, typename C, typename...Args>
 struct ListOfArgs<R(C::*)(Args...)> : public mtp::TConst<mtp::List<Args...>> {};
 
+template<typename R, typename C, typename...Args>
+struct ListOfArgs<R(C::*)(Args...) const> : public mtp::TConst<mtp::List<Args...>> {};
+
 template<typename L, typename R>
 class ArgsGetterHelper {
-    static_assert(mtp::AlwaysFalse<L>::value, "!");
+    static_assert(mtp::AlwaysFalse<L>::value, "Not a list in parameter...");
 };
 
 template<typename A, typename...Args, typename R>
@@ -53,8 +56,7 @@ class ArgsGetterHelper<mtp::List<A, Args...>, R> : public
                 typename A::type 
             >
         >
-    > {
-};
+    > {};
 
 template<typename R>
 class ArgsGetterHelper<mtp::List<>, R> : public mtp::TConst<R> {};

@@ -33,7 +33,7 @@ struct alignas(T) RawData {
 
     template<typename...Args>
     void construct(Args&&...args) {
-        ::new (&value) T(std::forward<Args>(args)...);
+        new (&cast()) T(std::forward<Args>(args)...);
     }
 
     void destroy() {

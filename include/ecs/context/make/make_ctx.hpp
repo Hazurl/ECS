@@ -20,13 +20,13 @@ ECS_BEGIN_NS_CTX
 
 namespace {
 
-template<typename entity_mask, typename = std::enable_if_t<is_entity_mask_policy<entity_mask>>>
+template<typename entity_mask, typename = std::enable_if_t<is_entity_mask_policy<entity_mask>::value>>
 using _make_entity = Entity<entity_mask>;
 
-template<typename...Components, typename = std::enable_if_t<mtp::unique_v<mtp::List<Components...>>>>
-using _make_components = mtp::List<Components...>;
+template<typename Components, typename = std::enable_if_t<mtp::unique_v<Components>>>
+using _make_components = Components;
 
-template<typename grow_policy, typename = std::enable_if_t<is_grow_policy<grow_policy>>>
+template<typename grow_policy, typename = std::enable_if_t<is_grow_policy<grow_policy>::value>>
 using _make_grow_policy = grow_policy;
 
 }
@@ -38,7 +38,7 @@ using default_entity = make_entity<entity_32_mask>;
 
 // Components
 template<typename...Components>
-using make_components = _make_components<Components...>;
+using make_components = _make_components<mtp::List<Components...>>;
 
 // Grow policy
 template<typename grow_policy>
@@ -56,23 +56,23 @@ using make_views = Views<entity_t, Comps...>;
 
 // Entity Controller
 template<typename entity_t, typename Components, typename limit_size = default_limit_size, typename grow_policy = default_grow_policy>
-using make_entity_controller = typename EntitiesController<entity_t, Components, limit_size, grow_policy>::user_bridge;
+using make_entity_controller = typename EntityController<entity_t, Components, limit_size, grow_policy>::user_bridge;
 
 // Systems
 template<typename T, typename...Methods>
-using make_system = System<T, mtp::List<mtp::tranform<Methods, TransformSystem>>>;
+using make_system = System<T, mtp::List<Methods...>>;
 
-template<typename S...>
+template<typename...S>
 using make_systems = mtp::List<S...>;
 
 // Method
 template<typename F, F f>
 using make_method = Method<F, f>;
-#define ECS_MAKE_METHOD(x...) make_method<decltype(x), x>
+#define ECS_MAKE_METHOD(x...) ::ecs::ctx::make_method<decltype((x)), (x)>
 
 // Final ECS
-template<typename Entity, typename Systems, typename Components, typename limit_size = default_limit_size, typename grow_policy = default_grow_policy>
-using make_ecs = Controller<SystemUpdater<Systems, EntityController<Entity, Components, limit_size, grow_policy>>;
+template<typename Entity, typename Components, typename Systems, typename limit_size = default_limit_size, typename grow_policy = default_grow_policy>
+using make_ecs = Controller<SystemUpdater<Systems, EntityController<Entity, Components, limit_size, grow_policy>>>;
 
 ECS_END_NS_CTX
 ECS_END_NS

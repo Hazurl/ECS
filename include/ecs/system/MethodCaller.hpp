@@ -23,4 +23,17 @@ public:
 
 };
 
+template<typename T, typename R, typename...Args>
+class MethodCaller<T, R(T::*)(Args...) const> {
+public:
+
+    using Method = R(T::*)(Args...) const;
+
+    template<typename H>
+    static void call(T& t, Method m, H & args_helper) {
+        return (t.*m)((args_helper.template get<mtp::remove_qualifiers<Args>>())...);
+    }
+
+};
+
 ECS_END_NS

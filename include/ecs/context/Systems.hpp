@@ -29,7 +29,7 @@ template<typename...Args>
 using SystemMethods_list = mtp::List<Args...>;
 
 template<typename S>
-struct TransformSystemHelper : mtp::TConst<System<S, SystemMethods_list< SYST_METH(S::update) >>> {};
+struct TransformSystemHelper : mtp::TConst<System<S, SystemMethods_list< Method<decltype(&S::update), (&S::update)> >>> {};
 
 template<typename S, typename M>
 struct TransformSystemHelper<System<S, M>> : mtp::TConst<System<S, M>> {};

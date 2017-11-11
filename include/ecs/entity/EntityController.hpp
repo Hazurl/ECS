@@ -13,11 +13,14 @@
 
 ECS_BEGIN_NS
 
+template<typename, typename>
+class SystemUpdater;
+
 template<typename _Entity, typename _Components, typename _limit_size, typename _grow_policy>
 class EntityController {
 public:
 
-    using this_t = EntitiesController<_Entity, _Components, _limit_size, _grow_policy>;
+    using this_t = EntityController<_Entity, _Components, _limit_size, _grow_policy>;
 
     struct Futur {
         using Func = std::function<void(this_t&)>;
@@ -28,8 +31,8 @@ public:
         }
 
     private:
-        template<typename S, typename C>
-        friend SystemUpdater<S, C>;
+        template<typename, typename>
+        friend class SystemUpdater;
 
         void execute(this_t& controller) {
             for(auto& func : funcs)
@@ -47,6 +50,9 @@ public:
     static constexpr ui32 limit_size = _limit_size::value;
 
 private:
+
+    template<typename, typename>
+    friend class SystemUpdater;
 
     using EntityManager_t = EntityManager<Entity_t>;
 
@@ -82,11 +88,14 @@ public:
     template<typename...Comps>
     void remove_components(Entity_t ent) {
         mtp::apply_lambda<
-        mtp::switch_t<mtp::empty_v<mtp::List<Comps...>>, // if Comps is empty, then reset all components
-                      typename Context::components_type, 
-                      mtp::List<Comps...>>>{}([&] (auto x) {
+            mtp::switch_t<
+                mtp::empty_v<mtp::List<Comps...>>, // if Comps is empty, then reset all components
+                Components, 
+                mtp::List<Comps...>
+            >
+        >{}([&] (auto x) {
             using T = typename decltype(x)::type;
-            this->std::get<Pool<T>>(pools).remove(ent.id());
+            std::get<Pool<T>>(this->pools).remove(ent.id());
         });
     }
 
@@ -113,7 +122,7 @@ public:
     template<typename C, typename...Args>
     C& ensure_component(Entity_t ent, Args&&... args) {
         return has_component<C>(ent) ? 
-            get<C>(ent) : 
+            get_component<C>(ent) : 
             std::get<Pool<C>>(pools).add(ent.id(), std::forward<Args>(args)...);
     }
 

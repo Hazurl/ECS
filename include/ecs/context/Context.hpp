@@ -57,56 +57,35 @@ struct Context <Components_list<Crgs...>, Systems_list<Srgs...>, Pools, Entities
 
 template<typename S>
 class SystemsConstructor {
-    static_assert(mtp::AlwaysFalse<S>::value, "You must use a Systems_list");
+    static_assert(mtp::AlwaysFalse<S>::value, "You must use a list");
 };
 
 template<typename...Srgs>
-class SystemsConstructor<Systems_list<Srgs...>> : std::tuple<std::function<Srgs()>...> {
+class SystemsConstructor<mtp::List<Srgs...>> : std::tuple<std::function<Srgs()>...> {
     template<typename S> using F = std::function<S()>;
-    static_assert(mtp::unique_v<Systems_list<Srgs...>>, "Systems must be unique");
+    static_assert(mtp::unique_v<mtp::List<Srgs...>>, "Systems must be unique");
 
-    using L = Systems_list<Srgs...>;
+    using L = mtp::List<Srgs...>;
     
 public:
 
     template<typename S>
     static constexpr bool has_constructor_for = mtp::count_v<L, S> > 0;
 
-    SystemsConstructor(std::function<Srgs()>...funcs) {
-        assign_helper<Srgs...>(funcs...);
-    }
+    SystemsConstructor(std::function<Srgs()>...funcs) 
+    : std::tuple<std::function<Srgs()>...>(std::forward<std::function<Srgs()>>(funcs)...) {}
 
     template<typename S>
-    std::enable_if_t<(mtp::count_v<L, S> > 0),
-    S> construct_system() {
+    std::enable_if_t<has_constructor_for<S>,
+    S> construct_system() const {
         return std::get<F<S>>(*this)();
     }
 
     template<typename S>
-    std::enable_if_t<(mtp::count_v<L, S> == 0),
-    S> construct_system() {
+    std::enable_if_t<!has_constructor_for<S>,
+    S> construct_system() const {
         return S{};
     }
-
-private:
-
-    template<typename S, typename...Ss>
-    void assign(F<S> func, F<Ss>...funcs) {
-        assign(func);
-        assign<Ss...>(funcs...);
-    }
-
-    template<typename S>
-    void assign(F<S> func) {
-        std::get<F<S>>(*this) = func;
-    }
-
-    template<typename...Ss>
-    void assign_helper(F<Ss>...funcs) {
-        assign(funcs...);
-    }
-    
-    void assign_helper() {}
 };
 
 ECS_END_NS

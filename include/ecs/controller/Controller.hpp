@@ -1,14 +1,15 @@
 #pragma once
 
+#include <ecs/context/Context.hpp>
 #include <ecs/Config.hpp>
 
 ECS_BEGIN_NS
 
 template<typename SystemsUpdater_t>
 class Controller {
-
-    template<typename SC>
-    Controller(SC sc) : updater(controller, sc) {}
+public:
+    template<typename SC = SystemsConstructor<mtp::List<>>>
+    Controller(SC const& sc = SystemsConstructor<mtp::List<>>{}) : updater(controller, sc) {}
 
     template<typename...Args>
     void update(Args&&...args) {
