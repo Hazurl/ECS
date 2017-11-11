@@ -20,12 +20,6 @@ public:
     using this_t = EntitiesController<_Entity, _Components, _limit_size, _grow_policy>;
 
     struct Futur {
-        execute(this_t& controller) { // private + friend ?
-            for(auto& func : funcs)
-                func(controller);
-            funcs.clear();
-        }
-
         using Func = std::function<void(this_t&)>;
 
         Futur& operator += (Func func) {
@@ -34,6 +28,15 @@ public:
         }
 
     private:
+        template<typename S, typename C>
+        friend SystemUpdater<S, C>;
+
+        void execute(this_t& controller) {
+            for(auto& func : funcs)
+                func(controller);
+            funcs.clear();
+        }
+
         std::vector<Func> funcs;
     };
 
@@ -52,7 +55,6 @@ private:
     using Pools = mtp::transform<Components, Pool>;
 
 public:
-
 
     Entity_t create () { 
         return entityManager.create();

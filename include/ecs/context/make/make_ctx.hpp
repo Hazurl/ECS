@@ -6,7 +6,7 @@
 #include <ecs/policy/mask_policy.hpp>
 
 #include <ecs/entity/Entity.hpp>
-#include <ecs/entity/EntitiesController.hpp>
+#include <ecs/entity/EntityController.hpp>
 
 #include <mtp/list/List.hpp>
 
