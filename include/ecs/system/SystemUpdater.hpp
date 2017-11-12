@@ -3,6 +3,7 @@
 #include <ecs/system/ArgsGetter.hpp>
 #include <ecs/system/MethodCaller.hpp>
 #include <ecs/Config.hpp>
+#include <ecs/container/Tuple.hpp>
 
 ECS_BEGIN_NS
 
@@ -41,7 +42,7 @@ private:
 public:
 
     template<typename SystemConstr>
-    SystemUpdater(EntityController_t& controller, SystemConstr const& sc = SystemsConstructor<mtp::List<>>{}) : controller(controller) {
+    SystemUpdater(EntityController_t& controller, SystemConstr const& sc = SystemsConstructor<>{}) : controller(controller) {
         mtp::apply_lambda<Systems_t>{}([this, &sc] (auto s) {
             using S = mtp::type_of<decltype(s)>;
             this->systems.template construct<S>(sc.template construct_system<S>());

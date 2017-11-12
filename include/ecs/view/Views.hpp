@@ -3,7 +3,7 @@
 #include <ecs/Config.hpp>
 #include <ecs/view/View.hpp>
 #include <vector>
-#include <ecs/container/iterators/RandomRefIterator.hpp>
+#include <ecs/container/iterators/RandomIterator.hpp>
 
 #include <vector>
 
@@ -17,9 +17,7 @@ public:
     using container_t = std::vector<view_t>;
     using list_t = mtp::List<Cs...>;
 
-    Views(container_t const& views) : views(views) {
-        std::cout << "Views constructed, size: " << views.size() << std::endl;
-    }
+    Views(container_t const& views) : views(views) {}
     ~Views() = default;
 
     auto begin()  { return views.begin(); }

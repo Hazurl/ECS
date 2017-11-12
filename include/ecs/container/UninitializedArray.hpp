@@ -3,7 +3,7 @@
 #include <ecs/Config.hpp>
 #include <ecs/policy/grow_policy.hpp>
 #include <ecs/container/RawArray.hpp>
-#include <ecs/container/iterators/RandomRefIterator.hpp>
+#include <ecs/container/iterators/RandomIterator.hpp>
 
 #include <mtp/Utils.hpp>
 
@@ -26,8 +26,8 @@ class UninitializedArray<C, Size, instant_grow_policy, true> {
 public:
     using this_t = UninitializedArray<C, Size, instant_grow_policy, true>;
 
-    using forward_iterator = RandomRefIterator<this_t, C, true>;
-    using backward_iterator = RandomRefIterator<this_t, C, false>;
+    using forward_iterator = RandomIterator<this_t, C, true>;
+    using backward_iterator = RandomIterator<this_t, C, false>;
     using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
     using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 
@@ -75,8 +75,8 @@ class UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, 
 public:
     using this_t = UninitializedArray<C, max_size, growing_grow_policy<InitialSize, Factor>, true>;
 
-    using forward_iterator = RandomRefIterator<this_t, C, true>;
-    using backward_iterator = RandomRefIterator<this_t, C, false>;
+    using forward_iterator = RandomIterator<this_t, C, true>;
+    using backward_iterator = RandomIterator<this_t, C, false>;
     using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
     using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 
@@ -157,8 +157,8 @@ class UninitializedArray<C, max_size, bucket_grow_policy<N>, true> {
 public:
     using this_t = UninitializedArray<C, max_size, bucket_grow_policy<N>, true>;
     
-    using forward_iterator = RandomRefIterator<this_t, C, true>;
-    using backward_iterator = RandomRefIterator<this_t, C, false>;
+    using forward_iterator = RandomIterator<this_t, C, true>;
+    using backward_iterator = RandomIterator<this_t, C, false>;
     using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
     using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 

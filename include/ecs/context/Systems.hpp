@@ -4,19 +4,15 @@
 
 #include <mtp/list/List.hpp>
 
-ECS_BEGIN_NS
+#include <functional>
+#include <tuple>
 
-#define SYST_METH(x...) Method<decltype(&x), (&x)>
+ECS_BEGIN_NS
 
 template<typename F, F f>
 struct Method {
     using type = F;
     static constexpr F function = f;
-/*
-    template<typename C, typename...Args>
-    constexpr static auto call (C&& c, Args&&...args) {
-        return (c.*function)(std::forward<Args>(args)...);
-    } */
 };
 
 template<typename T, typename M>
@@ -25,16 +21,41 @@ struct System {
     using methods = M;
 };
 
-template<typename...Args>
-using SystemMethods_list = mtp::List<Args...>;
-
 template<typename S>
-struct TransformSystemHelper : mtp::TConst<System<S, SystemMethods_list< Method<decltype(&S::update), (&S::update)> >>> {};
+struct TransformSystemHelper : mtp::TConst<System<S, mtp::List< Method<decltype(&S::update), (&S::update)> >>> {};
 
 template<typename S, typename M>
 struct TransformSystemHelper<System<S, M>> : mtp::TConst<System<S, M>> {};
 
 template<typename S>
 using TransformSystem = typename TransformSystemHelper<S>::type;
+
+template<typename...Srgs>
+class SystemsConstructor : std::tuple<std::function<Srgs()>...> {
+    template<typename S> using F = std::function<S()>;
+
+    using L = mtp::List<Srgs...>;
+    static_assert(mtp::unique_v<L>, "Systems must be unique");
+    
+public:
+
+    template<typename S>
+    static constexpr bool has_constructor_for = mtp::count_v<L, S> > 0;
+
+    SystemsConstructor(std::function<Srgs()>...funcs) 
+    : std::tuple<std::function<Srgs()>...>(std::forward<std::function<Srgs()>>(funcs)...) {}
+
+    template<typename S>
+    std::enable_if_t<has_constructor_for<S>,
+    S> construct_system() const {
+        return std::get<F<S>>(*this)();
+    }
+
+    template<typename S>
+    std::enable_if_t<!has_constructor_for<S>,
+    S> construct_system() const {
+        return S{};
+    }
+};
 
 ECS_END_NS

@@ -13,8 +13,8 @@ public:
 
     using this_t = SparseSet<C, Size, Key, grow_policy>;
     using container_t = UninitializedArray<C, Size, grow_policy>;
-    using forward_iterator = RandomRefIterator<this_t, C, true>;
-    using backward_iterator = RandomRefIterator<this_t, C, false>;
+    using forward_iterator = RandomIterator<this_t, C, true>;
+    using backward_iterator = RandomIterator<this_t, C, false>;
     using forward_const_iterator = ConstRandomIterator<this_t, C, true>;
     using backward_const_iterator = ConstRandomIterator<this_t, C, false>;
 

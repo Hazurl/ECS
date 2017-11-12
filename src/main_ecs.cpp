@@ -1,8 +1,8 @@
 #include <ecs/Config.hpp>
 #include <ecs/controller/Controller.hpp>
-#include <ecs/context/Context.hpp>
+#include <ecs/context/make_ctx.hpp>
 #include <ecs/container/Tuple.hpp>
-#include <ecs/entity/EntitiesController.hpp>
+#include <ecs/entity/EntityController.hpp>
 
 #include <iostream>
 
@@ -38,7 +38,7 @@ using Entities_t = int[100];
 */
 template<typename...Args>
 struct View {};
-
+/*
 template<typename E>
 struct Mover {
     Mover(int) { std::cout << "Mover Construction" << std::endl; } 
@@ -57,7 +57,7 @@ struct Mover {
     void _update(float t) {
         std::cout << "update 2 " << t << std::endl;
     }
-};
+};*/
 /*
 template<typename Context, typename T, typename F>
 struct getViewArgs {
@@ -84,7 +84,7 @@ int main (int , char** ) {
     using namespace ECS_NS_ECS;
 
     using Ent_t = Entity<Entities_::mask>;
-    using Mover_t = Mover<Ent_t>;
+    /*using Mover_t = Mover<Ent_t>;
     using MoverSystem = System< Mover_t, SystemMethods_list<
         Methods<void (Mover_t::*)(ecs::Views<Ent_t, X> const& views, int), &Mover_t::update>
     > >;
@@ -105,6 +105,6 @@ int main (int , char** ) {
     c.add<X>(c.create(), 42);
 
     c.update(0);
-
+*/
     return 0;
 }

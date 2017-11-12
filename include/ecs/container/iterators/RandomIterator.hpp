@@ -60,7 +60,7 @@ private:
 };
 
 template<typename A, typename T, bool is_forward = true>
-class RandomRefIterator { 
+class RandomIterator { 
 public:
     using difference_type = std::ptrdiff_t;
     using ret_type_ref = T&;
@@ -71,12 +71,12 @@ public:
     using type_ptr = A*;
     using iterator_category = std::random_access_iterator_tag;
 
-    using this_t = RandomRefIterator<A, T, is_forward>;
+    using this_t = RandomIterator<A, T, is_forward>;
     
-    RandomRefIterator(type_ref a, ui32 pos) : a(&a), pos(pos) {}
-    RandomRefIterator() : a(nullptr), pos(0) {}
-    RandomRefIterator(const this_t& it) : a(it.a), pos(it.pos) {}
-    ~RandomRefIterator() = default;
+    RandomIterator(type_ref a, ui32 pos) : a(&a), pos(pos) {}
+    RandomIterator() : a(nullptr), pos(0) {}
+    RandomIterator(const this_t& it) : a(it.a), pos(it.pos) {}
+    ~RandomIterator() = default;
 
     this_t& operator=(const this_t& it)     { pos = it.pos; a = it.a; return *this; }
 
