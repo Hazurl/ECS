@@ -8,6 +8,8 @@ ECS_BEGIN_NS
 template<typename SystemsUpdater_t>
 class Controller {
 public:
+    using Entity_t = typename SystemsUpdater_t::EntityController_t::Entity_t;
+
     template<typename SC>
     Controller(SC const& sc = SystemsConstructor<>{}) : updater(controller, sc) {}
 
@@ -24,11 +26,11 @@ public:
     }
 
     ui32 size () const { 
-        return controller.size(ent);
+        return controller.size();
     }
 
     bool empty () const { 
-        return controller.empty(ent);
+        return controller.empty();
     }
 
     template<typename...Comps>
