@@ -71,7 +71,7 @@ public:
 
 private:
 
-    template<typename, typename>
+    template<typename, typename, typename>
     friend class SystemUpdater;
 
     using EntityManager_t = EntityManager<Entity_t>;
