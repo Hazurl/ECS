@@ -8,6 +8,8 @@
 #include <ecs/entity/Entity.hpp>
 #include <ecs/entity/EntityController.hpp>
 
+#include <ecs/tag/TagController.hpp>
+
 #include <ecs/context/Systems.hpp>
 #include <ecs/system/SystemUpdater.hpp>
 
@@ -50,6 +52,12 @@ template<ui32 limit>
 using make_limit_size = mtp::ui32_<limit>;
 using default_limit_size = make_limit_size<256>;
 
+// Tags
+template<typename...Tags>
+using make_tags = mtp::List<Tags...>;
+template<typename Tags, typename limit_size = default_limit_size>
+using make_tag_controller = typename TagController<Tags, limit_size>::user_bridge;
+
 // Views
 template<typename entity_t, typename...Comps>
 using make_views = Views<entity_t, Comps...>;
@@ -63,7 +71,7 @@ template<typename T, typename...Methods>
 using make_system = System<T, mtp::List<Methods...>>;
 
 template<typename...S>
-using make_systems = mtp::List<S...>;
+using make_systems = mtp::transform<mtp::List<S...>, TransformSystem>;
 
 // Method
 template<typename F, F f>
@@ -71,8 +79,11 @@ using make_method = Method<F, f>;
 #define ECS_MAKE_METHOD(x...) ::ecs::ctx::make_method<decltype((x)), (x)>
 
 // Final ECS
-template<typename Entity, typename Components, typename Systems, typename limit_size = default_limit_size, typename grow_policy = default_grow_policy>
-using make_ecs = Controller<SystemUpdater<Systems, EntityController<Entity, Components, limit_size, grow_policy>>>;
+template<typename Entity, typename Components, typename Systems, typename Tags, typename limit_size = default_limit_size, typename grow_policy = default_grow_policy>
+using make_ecs = Controller<
+                    SystemUpdater<Systems, 
+                        EntityController<Entity, Components, limit_size, grow_policy>,
+                        TagController<Tags, limit_size>>>;
 
 ECS_END_NS_CTX
 ECS_END_NS

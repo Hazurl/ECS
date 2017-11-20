@@ -13,7 +13,7 @@
 
 ECS_BEGIN_NS
 
-template<typename, typename>
+template<typename, typename, typename>
 class SystemUpdater;
 
 template<typename _Entity, typename _Components, typename _limit_size, typename _grow_policy>
@@ -21,29 +21,49 @@ class EntityController {
 public:
 
     using this_t = EntityController<_Entity, _Components, _limit_size, _grow_policy>;
+    using Entity_t = _Entity;
 
     struct Futur {
         using Func = std::function<void(this_t&)>;
+
+        Futur(this_t& controller) : controller(controller) {}
 
         Futur& operator += (Func func) {
             funcs.push_back(func);
             return *this;
         }
 
+        bool alive (Entity_t ent) const { 
+            return controller.alive(ent);
+        }
+
+        ui32 size () const { 
+            return controller.size();
+        }
+
+        bool empty () const { 
+            return controller.empty();
+        }
+
+        template<typename C>
+        bool has_component(Entity_t ent) const {
+            return controller.template has<C>(ent);        
+        }
+
     private:
-        template<typename, typename>
+        template<typename, typename, typename>
         friend class SystemUpdater;
 
-        void execute(this_t& controller) {
+        void execute() {
             for(auto& func : funcs)
                 func(controller);
             funcs.clear();
         }
 
         std::vector<Func> funcs;
+        this_t& controller;
     };
 
-    using Entity_t = _Entity;
     using Components = _Components;
     using grow_policy = _grow_policy;
     using user_bridge = Futur;
@@ -100,7 +120,7 @@ public:
     }
 
     template<typename C>
-    bool has_component(Entity_t ent) {
+    bool has_component(Entity_t ent) const {
         return std::get<Pool<C>>(pools).has(ent.id());        
     }
 
